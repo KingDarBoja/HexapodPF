@@ -105,7 +105,7 @@ void setup() {
 }
 
 void loop() {
-//  put your main code here, to run repeatedly:
+  // put your main code here, to run repeatedly:
 
   // START THE MOVEMENT, BUT VERIFY IF THE PROGRAM IS RUNNING THE FIRST TIME.
 
