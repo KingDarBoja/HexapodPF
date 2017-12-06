@@ -3,12 +3,17 @@
 // Developed by Andrea Fontalvo (First Hexapod - Uninorte)
 // Edited by Manuel Bojato, Augusto Amador (Second Hexapod - Uninorte)
 
-//ARDUINO MAIN LIBRARY
+// ARDUINO MAIN LIBRARY
 #include <Arduino.h>
 
-// //LIBRARIES
-// #include <Servo.h>
-//
+// LIBRARIES
+#include <Servo.h>
+#include <Wire.h>
+
+// Include external files
+extern void gyroSetting();
+extern void gyroMeasure();
+
 // //GLOBAL VARIABLES
 // int cc = 0;
 // void MoveCommand(int s11o, int s21o, int s31o, int s41o, int s51o, int s61o,
@@ -21,6 +26,22 @@
 // void Atras();
 // void Derecha();
 // void Izquierda();
+
+// // I2C Direction of IMU
+// #define MPU 0x68
+//
+// // Conversion Ratios
+// #define A_R 16384.0
+// #define G_R 131.0
+//
+// // Rad to degree Conversion
+// #define RAD_A_DEG = 57.295779
+//
+// // MPU-6050 values are 16 bit integers
+// int16_t AcX, AcY, AcZ, GyX, GyY, GyZ;
+//
+// // Angles
+// float Acc[2], Gy[2], Angle[2];
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // TRIGGER PINS
@@ -87,6 +108,7 @@ int limitValue(int mvalue)
 
 void setup() {
     // put your setup code here, to run once:
+    gyroSetting();
     Serial1.begin(9600);
     Serial.begin(9600);
 
@@ -107,6 +129,9 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
 
+  // gyroMeasure function
+  gyroMeasure();
+
   // START THE MOVEMENT, BUT VERIFY IF THE PROGRAM IS RUNNING THE FIRST TIME.
 
   // Checking the values of Ultrasonic sensor and storing them into int variables.
@@ -125,8 +150,8 @@ void loop() {
 
   msj = stringFU + ":" + stringRU + ":" + stringLU + ":" + stringR + ":" + stringL;
   Serial1.println(msj);
-  Serial.println(msj);
-  delay(500);
+  //Serial.println(msj);
+  delay(200);
 
   if (Serial1.available()>0)
   {
