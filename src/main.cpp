@@ -7,41 +7,19 @@
 #include <Arduino.h>
 
 // LIBRARIES
-#include <Servo.h>
+// #include <Servo.h>
 #include <Wire.h>
 
 // Include external files
 extern void gyroSetting();
 extern void gyroMeasure();
-
-// //GLOBAL VARIABLES
-// int cc = 0;
-// void MoveCommand(int s11o, int s21o, int s31o, int s41o, int s51o, int s61o,
-//                  int s12o, int s22o, int s32o, int s42o, int s52o, int s62o,
-//                  int s13o, int s23o, int s33o, int s43o, int s53o, int s63o,
-//                  int DelayTime);
-// void WakeUp();
-// void Adelante();
-// void Parche();
-// void Atras();
-// void Derecha();
-// void Izquierda();
-
-// // I2C Direction of IMU
-// #define MPU 0x68
-//
-// // Conversion Ratios
-// #define A_R 16384.0
-// #define G_R 131.0
-//
-// // Rad to degree Conversion
-// #define RAD_A_DEG = 57.295779
-//
-// // MPU-6050 values are 16 bit integers
-// int16_t AcX, AcY, AcZ, GyX, GyY, GyZ;
-//
-// // Angles
-// float Acc[2], Gy[2], Angle[2];
+extern void servoAttachment();
+extern void WakeUp();
+extern void Adelante();
+extern void Atras();
+extern void Izquierda();
+extern void Derecha();
+extern void Parche();
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // TRIGGER PINS
@@ -108,6 +86,7 @@ int limitValue(int mvalue)
 
 void setup() {
     // put your setup code here, to run once:
+    servoAttachment();
     gyroSetting();
     Serial1.begin(9600);
     Serial.begin(9600);
