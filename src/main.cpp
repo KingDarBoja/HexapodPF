@@ -9,6 +9,7 @@
 // LIBRARIES
 // #include <Servo.h>
 #include <Wire.h>
+#include <HexCalibrator.h>
 
 // Include external files
 extern void gyroSetting();
@@ -36,12 +37,13 @@ const int EP_RU = 39;
 const int EP_L  = 6;
 const int EP_R  = 50;
 
-// // MAIN VARIABLES DEFINITIONS
+// MAIN VARIABLES DEFINITIONS
 // String values of cm conversion for each ultrasonic sensor
 String stringFU, stringRU, stringLU, stringR, stringL;
 
 // Servo definition
 // Servo myservo;
+HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
 
 // String message to be sent via Serial1 port.
 String msj;
@@ -86,89 +88,75 @@ int limitValue(int mvalue)
 
 void setup() {
     // put your setup code here, to run once:
-    servoAttachment();
-    gyroSetting();
+    // servoAttachment();
+    // gyroSetting();
+    hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
     Serial1.begin(9600);
     Serial.begin(9600);
 
     // PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
-    pinMode(TP_FU, OUTPUT);
-    pinMode(TP_RU, OUTPUT);
-    pinMode(TP_LU, OUTPUT);
-    pinMode(TP_R , OUTPUT);
-    pinMode(TP_L , OUTPUT);
-
-    pinMode(EP_FU, INPUT);
-    pinMode(EP_RU, INPUT);
-    pinMode(EP_LU, INPUT);
-    pinMode(EP_L , INPUT);
-    pinMode(EP_R , INPUT);
+    // pinMode(TP_FU, OUTPUT);
+    // pinMode(TP_RU, OUTPUT);
+    // pinMode(TP_LU, OUTPUT);
+    // pinMode(TP_R , OUTPUT);
+    // pinMode(TP_L , OUTPUT);
+    //
+    // pinMode(EP_FU, INPUT);
+    // pinMode(EP_RU, INPUT);
+    // pinMode(EP_LU, INPUT);
+    // pinMode(EP_L , INPUT);
+    // pinMode(EP_R , INPUT);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
+  hexcal.ServoCalibrator();
+
   // gyroMeasure function
-  gyroMeasure();
+  // gyroMeasure();
 
   // START THE MOVEMENT, BUT VERIFY IF THE PROGRAM IS RUNNING THE FIRST TIME.
 
   // Checking the values of Ultrasonic sensor and storing them into int variables.
-  int cm_FU = ping(TP_FU, EP_FU);
-  int cm_RU = ping(TP_RU, EP_RU);
-  int cm_LU = ping(TP_LU, EP_LU);
-  int cm_R  = ping(TP_R , EP_R );
-  int cm_L  = ping(TP_L , EP_L );
-
-  // Conversion from int to string in order to send the package through serial port
-  stringFU =  String(limitValue(cm_FU));
-  stringRU =  String(limitValue(cm_RU));
-  stringLU =  String(limitValue(cm_LU));
-  stringR =  String(limitValue(cm_R));
-  stringL =  String(limitValue(cm_L));
-
-  msj = stringFU + ":" + stringRU + ":" + stringLU + ":" + stringR + ":" + stringL;
-  Serial1.println(msj);
-  //Serial.println(msj);
-  delay(200);
-
-  if (Serial1.available()>0)
-  {
-    char movCase = Serial1.read();
-    switch(movCase)
-    {
-      case 'F':
-        Serial.println("Adelante");
-        break;
-      case 'L':
-        Serial.println("Izquierda");
-        break;
-      case 'R':
-        Serial.println("Derecha");
-        break;
-      case 'B':
-        Serial.println("Atras");
-        break;
-      default:
-        Serial.println("Default");
-        break;
-    }
-  }
-
- // msj = "hola:12,3";
- // Serial1.println(msj);
- // delay(500);
- // if (Serial1.available()>0)
- // {
- //   char movCase = Serial1.read();
- //   switch(movCase)
- //   {
- //     case 'F':
- //       Serial.println("Adelante");
- //       break;
- //     default:
- //       Serial.println("Default");
- //       break;
- //   }
- // }
+  // int cm_FU = ping(TP_FU, EP_FU);
+  // int cm_RU = ping(TP_RU, EP_RU);
+  // int cm_LU = ping(TP_LU, EP_LU);
+  // int cm_R  = ping(TP_R , EP_R );
+  // int cm_L  = ping(TP_L , EP_L );
+  //
+  // // Conversion from int to string in order to send the package through serial port
+  // stringFU =  String(limitValue(cm_FU));
+  // stringRU =  String(limitValue(cm_RU));
+  // stringLU =  String(limitValue(cm_LU));
+  // stringR =  String(limitValue(cm_R));
+  // stringL =  String(limitValue(cm_L));
+  //
+  // msj = stringFU + ":" + stringRU + ":" + stringLU + ":" + stringR + ":" + stringL;
+  // Serial1.println(msj);
+  // //Serial.println(msj);
+  // delay(200);
+  //
+  // if (Serial1.available()>0)
+  // {
+  //   char movCase = Serial1.read();
+  //   switch(movCase)
+  //   {
+  //     case 'F':
+  //       Serial.println("Adelante");
+  //       break;
+  //     case 'L':
+  //       Serial.println("Izquierda");
+  //       break;
+  //     case 'R':
+  //       Serial.println("Derecha");
+  //       break;
+  //     case 'B':
+  //       Serial.println("Atras");
+  //       break;
+  //     default:
+  //       Serial.println("Default");
+  //       break;
+  //   }
+  // }
 }

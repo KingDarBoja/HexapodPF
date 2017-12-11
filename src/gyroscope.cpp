@@ -49,7 +49,7 @@ void gyroMeasure()
   Wire.beginTransmission(MPU);
   Wire.write(0x43);
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU,4,true); //A diferencia del Acelerometro, solo se piden 4 registros
+  Wire.requestFrom(MPU,6,true); //A diferencia del Acelerometro, solo se piden 4 registros
   GyX=Wire.read()<<8|Wire.read();
   GyY=Wire.read()<<8|Wire.read();
   GyZ=Wire.read()<<8|Wire.read();
