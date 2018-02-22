@@ -21,6 +21,8 @@ extern void Atras();
 extern void Izquierda();
 extern void Derecha();
 extern void Parche();
+extern void Derecha_2();
+extern void Izquierda_2();
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // TRIGGER PINS
@@ -37,15 +39,28 @@ const int EP_RU = 39;
 const int EP_L  = 6;
 const int EP_R  = 50;
 
-// MAIN VARIABLES DEFINITIONS
-// String values of cm conversion for each ultrasonic sensor
-String stringFU, stringRU, stringLU, stringR, stringL;
+bool awake = false;
+
+/*
+  ····· MAIN VARIABLES DEFINITIONS ·····
+  Uncomment the below string variables in order to enable the ultrasonic sensor and
+  string conversion from float values (cm) to string.
+*/
+// String stringFU, stringRU, stringLU, stringR, stringL;
 
 // Servo definition
 // Servo myservo;
-HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
 
-// String message to be sent via Serial1 port.
+/*
+  ----- Hexapod Calibrator -----
+  Uncomment the following line along with the ones labeled as "Hexapod Calibrator"
+  in order to start the calibration of the hexapod
+*/
+// HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
+
+/*
+  String message to be sent via Serial1 port.
+*/
 String msj;
 
 // FUNCTION PING FOR TRIGGER / ECHO PAIR
@@ -88,9 +103,9 @@ int limitValue(int mvalue)
 
 void setup() {
     // put your setup code here, to run once:
-    // servoAttachment();
+    servoAttachment();
     // gyroSetting();
-    hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
+    // hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
     Serial1.begin(9600);
     Serial.begin(9600);
 
@@ -110,8 +125,10 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-
-  hexcal.ServoCalibrator();
+  /*
+    ----- Hexapod Calibrator -----
+  */
+  // hexcal.ServoCalibrator();
 
   // gyroMeasure function
   // gyroMeasure();
@@ -137,26 +154,35 @@ void loop() {
   // //Serial.println(msj);
   // delay(200);
   //
-  // if (Serial1.available()>0)
-  // {
-  //   char movCase = Serial1.read();
-  //   switch(movCase)
-  //   {
-  //     case 'F':
-  //       Serial.println("Adelante");
-  //       break;
-  //     case 'L':
-  //       Serial.println("Izquierda");
-  //       break;
-  //     case 'R':
-  //       Serial.println("Derecha");
-  //       break;
-  //     case 'B':
-  //       Serial.println("Atras");
-  //       break;
-  //     default:
-  //       Serial.println("Default");
-  //       break;
-  //   }
-  // }
+  delay(200);
+  if (awake == false) {
+    WakeUp();
+    Parche();
+    awake = true;
+  }
+  if (Serial.available()>0)
+  {
+    char movCase = Serial.read();
+    switch(movCase)
+    {
+      case 'F':
+        Serial.println("Adelante");
+        break;
+      case 'L':
+        Serial.println("Izquierda");
+        Izquierda_2();
+        break;
+      case 'R':
+        Serial.println("Derecha");
+        Derecha_2();
+        break;
+      case 'B':
+        Serial.println("Atras");
+        break;
+      default:
+        Serial.println("Default");
+        Parche();
+        break;
+    }
+  }
 }

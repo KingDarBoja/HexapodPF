@@ -312,3 +312,83 @@ void Derecha() {
                64, 64, 68, 59, 60, 61,
                10);
 }
+
+/*
+  ----- NEW HEXAPOD MOVEMENTS -----
+  Here lies several functions in order to generate more flexible and soft movements
+  for the hexapod. I use the difference between start and end angles in order to
+  make it more understandable for the users.
+*/
+void Derecha_2() {
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+30, s22i, s32i+30, s42i, s52i+30, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i-45, s21i, s31i-45, s41i, s51i-45, s61i,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i-30, s22i, s32i-30, s42i, s52i-30, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i+30, s32i, s42i+30, s52i, s62i+30,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i-45, s31i, s41i-45, s51i, s61i-45,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i-30, s32i, s42i-30, s52i, s62i-30,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i+45, s21i+45, s31i+45, s41i+45, s51i+45, s61i+45,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+}
+
+void Izquierda_2() {
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+30, s22i, s32i+30, s42i, s52i+30, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i+45, s21i, s31i+45, s41i, s51i+45, s61i,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i-30, s22i, s32i-30, s42i, s52i-30, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i+30, s32i, s42i+30, s52i, s62i+30,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i+45, s31i, s41i+45, s51i, s61i+45,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i-30, s32i, s42i-30, s52i, s62i-30,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i-45, s21i-45, s31i-45, s41i-45, s51i-45, s61i-45,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+}
