@@ -399,13 +399,13 @@ void Adelante_2() {
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i-20, s21i, s31i, s41i, s51i, s61i,
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i, s32i, s42i, s52i, s62i,
               s13i+10, s23i, s33i, s43i, s53i, s63i,
               10);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i-15, s22i, s32i, s42i, s52i, s62i,
+              s12i, s22i, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 }
