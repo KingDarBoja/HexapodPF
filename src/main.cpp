@@ -23,6 +23,7 @@ extern void Derecha();
 extern void Parche();
 extern void Derecha_2();
 extern void Izquierda_2();
+extern void Adelante_2();
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // TRIGGER PINS
@@ -105,29 +106,40 @@ void setup() {
     // put your setup code here, to run once:
     servoAttachment();
     // gyroSetting();
+
+    /*
+      ----- Hexapod Calibrator -----
+    */
     // hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
+
+    /*
+      Start the serial communication between the Xbee and the remote computer.
+    */
     Serial1.begin(9600);
     Serial.begin(9600);
 
-    // PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
-    // pinMode(TP_FU, OUTPUT);
-    // pinMode(TP_RU, OUTPUT);
-    // pinMode(TP_LU, OUTPUT);
-    // pinMode(TP_R , OUTPUT);
-    // pinMode(TP_L , OUTPUT);
-    //
-    // pinMode(EP_FU, INPUT);
-    // pinMode(EP_RU, INPUT);
-    // pinMode(EP_LU, INPUT);
-    // pinMode(EP_L , INPUT);
-    // pinMode(EP_R , INPUT);
+    /* PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
+      Uncomment the following lines in order to enable the ultrasonic sensor.
+      Warning: Not connected sensors will heavily slow the code */
+    /*
+    pinMode(TP_FU, OUTPUT);
+    pinMode(TP_RU, OUTPUT);
+    pinMode(TP_LU, OUTPUT);
+    pinMode(TP_R , OUTPUT);
+    pinMode(TP_L , OUTPUT);
+
+    pinMode(EP_FU, INPUT);
+    pinMode(EP_RU, INPUT);
+    pinMode(EP_LU, INPUT);
+    pinMode(EP_L , INPUT);
+    pinMode(EP_R , INPUT);
+    */
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  /*
-    ----- Hexapod Calibrator -----
-  */
+
+  /* ----- Hexapod Calibrator ----- */
   // hexcal.ServoCalibrator();
 
   // gyroMeasure function
@@ -154,6 +166,8 @@ void loop() {
   // //Serial.println(msj);
   // delay(200);
   //
+
+
   delay(200);
   if (awake == false) {
     WakeUp();
@@ -167,6 +181,7 @@ void loop() {
     {
       case 'F':
         Serial.println("Adelante");
+        Adelante_2();
         break;
       case 'L':
         Serial.println("Izquierda");
@@ -178,6 +193,10 @@ void loop() {
         break;
       case 'B':
         Serial.println("Atras");
+        break;
+      case 'T':
+        Serial.println("Derecha vieja");
+        Derecha();
         break;
       default:
         Serial.println("Default");
