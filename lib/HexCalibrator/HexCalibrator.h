@@ -3,8 +3,8 @@
   Created by Manuel Bojato, December 11, 2017.
   Released into the public domain.
 */
-#ifndef HexCalibrator_h
-#define HexCalibrator_h
+#ifndef _HexCalibrator_h_
+#define _HexCalibrator_h_
 
 #include <Arduino.h>
 #include <Servo.h>

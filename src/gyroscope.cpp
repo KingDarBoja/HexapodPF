@@ -1,7 +1,37 @@
+/**
+ *  @file    gyroscope.cpp
+ *  @author  Manuel Bojato (KingDarBoja)
+ *  @date    X/XX/XXXX
+ *  @version 1.0
+ *
+ *  @brief IMU6050 measuring, Electronic Engineering Final Project
+ *
+ *  @section DESCRIPTION
+ *
+ *  Program used to measure the gyroscope / accelerometer raw data in order to
+ *  apply Kalman filtering to calculate angle, rate and bias of the IMU6050.
+ *
+*/
+
 // ARDUINO MAIN LIBRARY
 #include <Arduino.h>
 #include <Wire.h>
+#include <Kalman.h>
+// Comment out to restrict roll to ±90deg instead
+// Please read: http://www.freescale.com/files/sensors/doc/app_note/AN3461.pdf
+#define RESTRICT_PITCH
 
+// Create the Kalman instances
+Kalman kalmanX;
+Kalman kalmanY;
+
+/* IMU Data */
+double accX, accY, accZ;
+double gyroX, gyroY, gyroZ;
+int16_t tempRaw;
+
+double gyroXangle, gyroYangle;  // Angle calculate using the gyro only
+double kalAngleX, kalAngleY;    // Calculated angle using a Kalman filter
 
 // I2C Direction of IMU
 #define MPU 0x68
@@ -49,7 +79,7 @@ void gyroMeasure()
   Wire.beginTransmission(MPU);
   Wire.write(0x43);
   Wire.endTransmission(false);
-  Wire.requestFrom(MPU,6,true); //A diferencia del Acelerometro, solo se piden 4 registros
+  Wire.requestFrom(MPU,6,true);
   GyX=Wire.read()<<8|Wire.read();
   GyY=Wire.read()<<8|Wire.read();
   GyZ=Wire.read()<<8|Wire.read();
