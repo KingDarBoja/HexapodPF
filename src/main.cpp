@@ -21,6 +21,9 @@ extern void Atras();
 extern void Izquierda();
 extern void Derecha();
 extern void Parche();
+extern void Derecha_2();
+extern void Izquierda_2();
+extern void Adelante_2();
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // TRIGGER PINS
@@ -37,15 +40,28 @@ const int EP_RU = 39;
 const int EP_L  = 6;
 const int EP_R  = 50;
 
-// MAIN VARIABLES DEFINITIONS
-// String values of cm conversion for each ultrasonic sensor
-String stringFU, stringRU, stringLU, stringR, stringL;
+bool awake = false;
+
+/*
+  ····· MAIN VARIABLES DEFINITIONS ·····
+  Uncomment the below string variables in order to enable the ultrasonic sensor and
+  string conversion from float values (cm) to string.
+*/
+// String stringFU, stringRU, stringLU, stringR, stringL;
 
 // Servo definition
 // Servo myservo;
-HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
 
-// String message to be sent via Serial1 port.
+/*
+  ----- Hexapod Calibrator -----
+  Uncomment the following line along with the ones labeled as "Hexapod Calibrator"
+  in order to start the calibration of the hexapod
+*/
+// HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
+
+/*
+  String message to be sent via Serial1 port.
+*/
 String msj;
 
 // FUNCTION PING FOR TRIGGER / ECHO PAIR
@@ -88,30 +104,43 @@ int limitValue(int mvalue)
 
 void setup() {
     // put your setup code here, to run once:
-    // servoAttachment();
+    servoAttachment();
     // gyroSetting();
-    hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
+
+    /*
+      ----- Hexapod Calibrator -----
+    */
+    // hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
+
+    /*
+      Start the serial communication between the Xbee and the remote computer.
+    */
     Serial1.begin(9600);
     Serial.begin(9600);
 
-    // PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
-    // pinMode(TP_FU, OUTPUT);
-    // pinMode(TP_RU, OUTPUT);
-    // pinMode(TP_LU, OUTPUT);
-    // pinMode(TP_R , OUTPUT);
-    // pinMode(TP_L , OUTPUT);
-    //
-    // pinMode(EP_FU, INPUT);
-    // pinMode(EP_RU, INPUT);
-    // pinMode(EP_LU, INPUT);
-    // pinMode(EP_L , INPUT);
-    // pinMode(EP_R , INPUT);
+    /* PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
+      Uncomment the following lines in order to enable the ultrasonic sensor.
+      Warning: Not connected sensors will heavily slow the code */
+    /*
+    pinMode(TP_FU, OUTPUT);
+    pinMode(TP_RU, OUTPUT);
+    pinMode(TP_LU, OUTPUT);
+    pinMode(TP_R , OUTPUT);
+    pinMode(TP_L , OUTPUT);
+
+    pinMode(EP_FU, INPUT);
+    pinMode(EP_RU, INPUT);
+    pinMode(EP_LU, INPUT);
+    pinMode(EP_L , INPUT);
+    pinMode(EP_R , INPUT);
+    */
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
 
-  hexcal.ServoCalibrator();
+  /* ----- Hexapod Calibrator ----- */
+  // hexcal.ServoCalibrator();
 
   // gyroMeasure function
   // gyroMeasure();
@@ -137,26 +166,42 @@ void loop() {
   // //Serial.println(msj);
   // delay(200);
   //
-  // if (Serial1.available()>0)
-  // {
-  //   char movCase = Serial1.read();
-  //   switch(movCase)
-  //   {
-  //     case 'F':
-  //       Serial.println("Adelante");
-  //       break;
-  //     case 'L':
-  //       Serial.println("Izquierda");
-  //       break;
-  //     case 'R':
-  //       Serial.println("Derecha");
-  //       break;
-  //     case 'B':
-  //       Serial.println("Atras");
-  //       break;
-  //     default:
-  //       Serial.println("Default");
-  //       break;
-  //   }
-  // }
+
+
+  delay(200);
+  if (awake == false) {
+    WakeUp();
+    Parche();
+    awake = true;
+  }
+  if (Serial.available()>0)
+  {
+    char movCase = Serial.read();
+    switch(movCase)
+    {
+      case 'F':
+        Serial.println("Adelante");
+        Adelante_2();
+        break;
+      case 'L':
+        Serial.println("Izquierda");
+        Izquierda_2();
+        break;
+      case 'R':
+        Serial.println("Derecha");
+        Derecha_2();
+        break;
+      case 'B':
+        Serial.println("Atras");
+        break;
+      case 'T':
+        Serial.println("Derecha vieja");
+        Derecha();
+        break;
+      default:
+        Serial.println("Default");
+        Parche();
+        break;
+    }
+  }
 }
