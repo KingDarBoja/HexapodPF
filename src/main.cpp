@@ -109,6 +109,10 @@ int limitValue(int mvalue)
 
 // Setup code to run once.
 void setup() {
+  // Start the communication at the serial ports.
+  Serial1.begin(9600);
+  Serial.begin(9600);
+
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
   servoAttachment();
@@ -121,13 +125,16 @@ void setup() {
   //*/
 
   /*
+  // ======================= GYROSCOPE MEASUREMENT =======================
+  // Enables the gyroscope measurement setup. It will test the sensor connection
+  // and get starting angles if succesful.
+  gyroMeasureSetting();
+  //*/
+
+  /*
   // ===================== HEXAPOD CALIBRATOR ROUTINE =====================
   hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
   //*/
-
-  // Start the communication at the serial ports.
-  Serial1.begin(9600);
-  Serial.begin(9600);
 
   /*
   // ===================== ULTRASONIC MEASURE =====================
@@ -156,6 +163,12 @@ void loop() {
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
   gyroCalibrationLoop();
+  //*/
+
+  /*
+  // ======================= GYROSCOPE MEASUREMENT =======================
+  // Measure raw data from sensor and print the processed data.
+  gyroMeasureLoop();
   //*/
 
   /*
