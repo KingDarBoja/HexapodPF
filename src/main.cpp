@@ -26,8 +26,6 @@
 #include <Kalman.h>
 
 // Include external files
-extern void gyroSetting();
-extern void gyroMeasure();
 extern void servoAttachment();
 extern void WakeUp();
 extern void Adelante();
@@ -44,7 +42,6 @@ bool awake = false;
 
 // Declare string variables for the ultrasonic measures.
 String stringFX = "0", stringLD = "0", stringRD = "0", stringLX = "0", stringRX = "0";
-
 String msg = "0:0:0:0:0:0"; // string to be sent, default.
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
@@ -54,6 +51,7 @@ const int TP_FX = 40, EP_FX = 41,
           TP_RD = 38, EP_RD = 39,
           TP_LX = 7,  EP_LX  = 6,
           TP_RX = 49, EP_RX  = 50;
+
 
 /**
     Applies PWM to the specified trigger pin, measure the echo and returns
@@ -86,24 +84,27 @@ int ping(int TriggerPin, int EchoPin)
 
 /*
 // ===================== HEXAPOD CALIBRATOR ROUTINE =====================
-// Uncomment this code block (place '/'' at the opening comment tag)
+// Uncomment this code block (place '/' at the opening comment tag)
 // in order to enable hexapod calibrator routine.
 // Note: The other code-blocks are labeled like this one.
 HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
 //*/
 
-// FUNCTION TO LIMIT ULTRASONIC VALUES
+/**
+    Limit to '100' ultrasonic processed data in order to make it work for the
+    remote computer algorythm.
+
+    @param mvalue proccesed value from ultrasonic measure.
+    @return mvalue limited value based on the specified limit.
+*/
 int limitValue(int mvalue)
 {
-  int rvalue = 0;
-  if (mvalue > 100)
-  {
-    rvalue = 100;
-  } else
-  {
-    rvalue = mvalue;
+  if (mvalue > 100) {
+    mvalue = 100;
+    return mvalue;
+  } else {
+    return mvalue;
   }
-  return rvalue;
 }
 
 // Setup code to run once.
@@ -113,9 +114,10 @@ void setup() {
   servoAttachment();
 
   /*
-  // ========================= GYROSCOPE =========================
-  // Enables the gyro
-  gyroSetting();
+  // ======================= GYROSCOPE CALIBRATION =======================
+  // Enables the gyroscope calibration setup. If the MPU6050 needs to be calibrated,
+  // you must uncomment the code block labeled like this.
+  gyroCalibrationSetting();
   //*/
 
   /*
@@ -128,9 +130,9 @@ void setup() {
   Serial.begin(9600);
 
   /*
-  // ===================== ULTRASONIC  =====================
+  // ===================== ULTRASONIC MEASURE =====================
   // Enables all the ultrasonic sensors for obstacle measurement.
-  // Warning: Not connected sensors will heavily slow the code
+  // Warning: Not connected sensors will heavily slow down the code.
   pinMode(TP_FX, OUTPUT);
   pinMode(TP_RD, OUTPUT);
   pinMode(TP_LD, OUTPUT);
@@ -152,34 +154,37 @@ void loop() {
   //*/
 
   /*
-  // ========================= GYROSCOPE =========================
-  gyroMeasure();
+  // ======================= GYROSCOPE CALIBRATION =======================
+  gyroCalibrationLoop();
   //*/
 
-  // START THE MOVEMENT, BUT VERIFY IF THE PROGRAM IS RUNNING THE FIRST TIME.
-
+  /*
+  // ========================= ULTRASONIC MEASURE =========================
   // Checking the values of Ultrasonic sensor and storing them into int variables.
-  // int cm_FU = ping(TP_FX, EP_FX);
-  // int cm_RU = ping(TP_RD, EP_RD);
-  // int cm_LU = ping(TP_LD, EP_LD);
-  // int cm_R  = ping(TP_RX , EP_RX );
-  // int cm_L  = ping(TP_LX , EP_LX );
-  //
-  // // Conversion from int to string in order to send the package through serial port
-  // stringFU =  String(limitValue(cm_FU));
-  // stringRU =  String(limitValue(cm_RU));
-  // stringLU =  String(limitValue(cm_LU));
-  // stringR =  String(limitValue(cm_R));
-  // stringL =  String(limitValue(cm_L));
-  //
-  // msj = stringFU + ":" + stringRU + ":" + stringLU + ":" + stringR + ":" + stringL;
-  // Serial1.println(msj);
-  // //Serial.println(msj);
-  // delay(200);
-  //
+  int cm_FX = ping(TP_FX, EP_FX);
+  int cm_RD = ping(TP_RD, EP_RD);
+  int cm_LD = ping(TP_LD, EP_LD);
+  int cm_RX  = ping(TP_RX , EP_RX );
+  int cm_LX  = ping(TP_LX , EP_LX );
 
+  // Conversion from int to string in order to send the package through serial port
+  stringFX =  String(limitValue(cm_FX));
+  stringRD =  String(limitValue(cm_RD));
+  stringLD =  String(limitValue(cm_LD));
+  stringRX =  String(limitValue(cm_RX));
+  stringLX =  String(limitValue(cm_LX));
+
+  // Message string to be send
+  msj = stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX;
+  Serial1.println(msj);
+  //*/
 
   delay(200);
+  /*
+  // ========================= HEXAPOD ACTIONS =========================
+  // The remote computer will receive the message string and make computational
+  // calculus to output a single char. It will be received via serial port,
+  // and the board will execute a movement based on that char.
   if (awake == false) {
     WakeUp();
     Parche();
@@ -215,4 +220,5 @@ void loop() {
         break;
     }
   }
+  //*/
 }
