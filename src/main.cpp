@@ -1,19 +1,31 @@
-// Main Program: Hexapod_Development Code
-// This code includes every ultrasonic sensor as inputs along with the movements of the hexapods as outputs.
-// Developed by Andrea Fontalvo (First Hexapod - Uninorte)
-// Edited by Manuel Bojato, Augusto Amador (Second Hexapod - Uninorte)
+/**
+ *  @file    main.cpp
+ *  @author  Manuel Bojato (KingDarBoja)
+ *  @date    X/XX/XXXX
+ *  @version 1.0
+ *
+ *  @brief Hexapod Development Main Code, Electronic Engineering Final Project
+ *
+ *  @section DESCRIPTION
+ *
+ *  Program used to execute movements of a six legged robot or "Hexapod"
+ *  (Lynxmotion AH3-R - 18 servos) from char inputs obtained by serial port
+ *  (wireless / wired) communication from a remote computer.
+ *
+ *  The program uses five ultrasonic sensors (HC-SR04) for obstacle detection,
+ *  whose values are sent through serial com to the remote computer.
+ *
+*/
 
 // ARDUINO MAIN LIBRARY
 #include <Arduino.h>
 
 // LIBRARIES
-// #include <Servo.h>
 #include <Wire.h>
 #include <HexCalibrator.h>
+#include <Kalman.h>
 
 // Include external files
-extern void gyroSetting();
-extern void gyroMeasure();
 extern void servoAttachment();
 extern void WakeUp();
 extern void Adelante();
@@ -21,50 +33,48 @@ extern void Atras();
 extern void Izquierda();
 extern void Derecha();
 extern void Parche();
+extern void Derecha_2();
+extern void Izquierda_2();
+extern void Adelante_2();
+
+// Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
+bool awake = false;
+
+// Declare string variables for the ultrasonic measures.
+String stringFX = "0", stringLD = "0", stringRD = "0", stringLX = "0", stringRX = "0";
+String msg = "0:0:0:0:0:0"; // string to be sent, default.
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
-// TRIGGER PINS
-const int TP_FU = 40;
-const int TP_LU = 5;
-const int TP_RU = 38;
-const int TP_L  = 7;
-const int TP_R  = 49;
+// F - Front, L - Left, R - Right, D - Diagonal, X - Side
+const int TP_FX = 40, EP_FX = 41,
+          TP_LD = 5,  EP_LD = 4,
+          TP_RD = 38, EP_RD = 39,
+          TP_LX = 7,  EP_LX  = 6,
+          TP_RX = 49, EP_RX  = 50;
 
-// ECHO PINS
-const int EP_FU = 41;
-const int EP_LU = 4;
-const int EP_RU = 39;
-const int EP_L  = 6;
-const int EP_R  = 50;
 
-// MAIN VARIABLES DEFINITIONS
-// String values of cm conversion for each ultrasonic sensor
-String stringFU, stringRU, stringLU, stringR, stringL;
+/**
+    Applies PWM to the specified trigger pin, measure the echo and returns
+    the converted centimeter value.
 
-// Servo definition
-// Servo myservo;
-HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
-
-// String message to be sent via Serial1 port.
-String msj;
-
-// FUNCTION PING FOR TRIGGER / ECHO PAIR
+    @param TriggerPin The assigned ultrasonic trigger pin.
+    @param EchoPin The assigned ultrasonic echo pin.
+    @return Centimeter measure of sensor.
+*/
 int ping(int TriggerPin, int EchoPin)
 {
    long duration, distanceCm;
 
    // In order to generate a clean pulse, set-up LOW at 4us.
-   // Para generar un pulso limpio ponemos a LOW 4us
    digitalWrite(TriggerPin, LOW);
    delayMicroseconds(4);
+
    // Generate Trigger (shot) of 10us
-   // Generamos Trigger (disparo) de 10us
    digitalWrite(TriggerPin, HIGH);
    delayMicroseconds(10);
    digitalWrite(TriggerPin, LOW);
 
    // Measure of time between pulses on microseconds.
-   // Medimos el tiempo entre pulsos, en microsegundos.
    duration = pulseIn(EchoPin, HIGH);
 
    // Distance conversion to cm.
@@ -72,91 +82,156 @@ int ping(int TriggerPin, int EchoPin)
    return distanceCm;
 }
 
-// FUNCTION TO LIMIT ULTRASONIC VALUES
+/*
+// ===================== HEXAPOD CALIBRATOR ROUTINE =====================
+// Uncomment this code block (place '/' at the opening comment tag)
+// in order to enable hexapod calibrator routine.
+// Note: The other code-blocks are labeled like this one.
+HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88, 98, 92, 83);
+//*/
+
+/**
+    Limit to '100' ultrasonic processed data in order to make it work for the
+    remote computer algorythm.
+
+    @param mvalue proccesed value from ultrasonic measure.
+    @return mvalue limited value based on the specified limit.
+*/
 int limitValue(int mvalue)
 {
-  int rvalue = 0;
-  if (mvalue > 100)
-  {
-    rvalue = 100;
-  } else
-  {
-    rvalue = mvalue;
+  if (mvalue > 100) {
+    mvalue = 100;
+    return mvalue;
+  } else {
+    return mvalue;
   }
-  return rvalue;
 }
 
+// Setup code to run once.
 void setup() {
-    // put your setup code here, to run once:
-    // servoAttachment();
-    // gyroSetting();
-    hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
-    Serial1.begin(9600);
-    Serial.begin(9600);
+  // Start the communication at the serial ports.
+  Serial1.begin(9600);
+  Serial.begin(9600);
 
-    // PIN MODE INITIALIZATION FOR EVERY TRIGGER / ECHO PIN
-    // pinMode(TP_FU, OUTPUT);
-    // pinMode(TP_RU, OUTPUT);
-    // pinMode(TP_LU, OUTPUT);
-    // pinMode(TP_R , OUTPUT);
-    // pinMode(TP_L , OUTPUT);
-    //
-    // pinMode(EP_FU, INPUT);
-    // pinMode(EP_RU, INPUT);
-    // pinMode(EP_LU, INPUT);
-    // pinMode(EP_L , INPUT);
-    // pinMode(EP_R , INPUT);
+  // Pin assigment of every servo of the hexapod.
+  // In order to edit it, open the movements.cpp file.
+  servoAttachment();
+
+  /*
+  // ======================= GYROSCOPE CALIBRATION =======================
+  // Enables the gyroscope calibration setup. If the MPU6050 needs to be calibrated,
+  // you must uncomment the code block labeled like this.
+  gyroCalibrationSetting();
+  //*/
+
+  /*
+  // ======================= GYROSCOPE MEASUREMENT =======================
+  // Enables the gyroscope measurement setup. It will test the sensor connection
+  // and get starting angles if succesful.
+  gyroMeasureSetting();
+  //*/
+
+  /*
+  // ===================== HEXAPOD CALIBRATOR ROUTINE =====================
+  hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
+  //*/
+
+  /*
+  // ===================== ULTRASONIC MEASURE =====================
+  // Enables all the ultrasonic sensors for obstacle measurement.
+  // Warning: Not connected sensors will heavily slow down the code.
+  pinMode(TP_FX, OUTPUT);
+  pinMode(TP_RD, OUTPUT);
+  pinMode(TP_LD, OUTPUT);
+  pinMode(TP_RX , OUTPUT);
+  pinMode(TP_LX , OUTPUT);
+  pinMode(EP_FX, INPUT);
+  pinMode(EP_RD, INPUT);
+  pinMode(EP_LD, INPUT);
+  pinMode(EP_LX , INPUT);
+  pinMode(EP_RX , INPUT);
+  //*/
 }
 
+// put your main code here, to run repeatedly:
 void loop() {
-  // put your main code here, to run repeatedly:
-
+  /*
+  // ===================== HEXAPOD CALIBRATOR ROUTINE =====================
   hexcal.ServoCalibrator();
+  //*/
 
-  // gyroMeasure function
-  // gyroMeasure();
+  /*
+  // ======================= GYROSCOPE CALIBRATION =======================
+  gyroCalibrationLoop();
+  //*/
 
-  // START THE MOVEMENT, BUT VERIFY IF THE PROGRAM IS RUNNING THE FIRST TIME.
+  /*
+  // ======================= GYROSCOPE MEASUREMENT =======================
+  // Measure raw data from sensor and print the processed data.
+  gyroMeasureLoop();
+  //*/
 
+  /*
+  // ========================= ULTRASONIC MEASURE =========================
   // Checking the values of Ultrasonic sensor and storing them into int variables.
-  // int cm_FU = ping(TP_FU, EP_FU);
-  // int cm_RU = ping(TP_RU, EP_RU);
-  // int cm_LU = ping(TP_LU, EP_LU);
-  // int cm_R  = ping(TP_R , EP_R );
-  // int cm_L  = ping(TP_L , EP_L );
-  //
-  // // Conversion from int to string in order to send the package through serial port
-  // stringFU =  String(limitValue(cm_FU));
-  // stringRU =  String(limitValue(cm_RU));
-  // stringLU =  String(limitValue(cm_LU));
-  // stringR =  String(limitValue(cm_R));
-  // stringL =  String(limitValue(cm_L));
-  //
-  // msj = stringFU + ":" + stringRU + ":" + stringLU + ":" + stringR + ":" + stringL;
-  // Serial1.println(msj);
-  // //Serial.println(msj);
-  // delay(200);
-  //
-  // if (Serial1.available()>0)
-  // {
-  //   char movCase = Serial1.read();
-  //   switch(movCase)
-  //   {
-  //     case 'F':
-  //       Serial.println("Adelante");
-  //       break;
-  //     case 'L':
-  //       Serial.println("Izquierda");
-  //       break;
-  //     case 'R':
-  //       Serial.println("Derecha");
-  //       break;
-  //     case 'B':
-  //       Serial.println("Atras");
-  //       break;
-  //     default:
-  //       Serial.println("Default");
-  //       break;
-  //   }
-  // }
+  int cm_FX = ping(TP_FX, EP_FX);
+  int cm_RD = ping(TP_RD, EP_RD);
+  int cm_LD = ping(TP_LD, EP_LD);
+  int cm_RX  = ping(TP_RX , EP_RX );
+  int cm_LX  = ping(TP_LX , EP_LX );
+
+  // Conversion from int to string in order to send the package through serial port
+  stringFX =  String(limitValue(cm_FX));
+  stringRD =  String(limitValue(cm_RD));
+  stringLD =  String(limitValue(cm_LD));
+  stringRX =  String(limitValue(cm_RX));
+  stringLX =  String(limitValue(cm_LX));
+
+  // Message string to be send
+  msj = stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX;
+  Serial1.println(msj);
+  //*/
+
+  delay(200);
+  /*
+  // ========================= HEXAPOD ACTIONS =========================
+  // The remote computer will receive the message string and make computational
+  // calculus to output a single char. It will be received via serial port,
+  // and the board will execute a movement based on that char.
+  if (awake == false) {
+    WakeUp();
+    Parche();
+    awake = true;
+  }
+  if (Serial.available()>0)
+  {
+    char movCase = Serial.read();
+    switch(movCase)
+    {
+      case 'F':
+        Serial.println("Adelante");
+        Adelante_2();
+        break;
+      case 'L':
+        Serial.println("Izquierda");
+        Izquierda_2();
+        break;
+      case 'R':
+        Serial.println("Derecha");
+        Derecha_2();
+        break;
+      case 'B':
+        Serial.println("Atras");
+        break;
+      case 'T':
+        Serial.println("Derecha vieja");
+        Derecha();
+        break;
+      default:
+        Serial.println("Default");
+        Parche();
+        break;
+    }
+  }
+  //*/
 }
