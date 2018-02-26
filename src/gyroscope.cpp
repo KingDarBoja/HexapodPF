@@ -37,7 +37,6 @@ Kalman kalmanY;
 
 double gyroXangle, gyroYangle;  // Angle calculate using the gyro only
 double kalAngleX, kalAngleY;    // Calculated angle using a Kalman filter
-int16_t tempRaw;
 uint32_t timer;
 
 // MPU6050 Address can be either 0x68 or 0x69, based on the AD0 state
@@ -53,7 +52,7 @@ long f_ax,f_ay, f_az;
 int p_ax, p_ay, p_az;
 long f_gx,f_gy, f_gz;
 int p_gx, p_gy, p_gz;
-int counter=0;
+int counter = 0;
 
 // Offset values
 int ax_o, ay_o, az_o;
@@ -62,25 +61,38 @@ int gx_o, gy_o, gz_o;
 void gyroMeasureSetting()
 {
   Wire.begin();               // Initialize I2C
+  #if ARDUINO >= 157
+    Wire.setClock(400000); // Set I2C frequency to 400kHz
+  #else
+    TWBR = ((F_CPU / 400000) - 16) / 2; // Set I2C frequency to 400kHz
+  #endif
   sensor.initialize();        // Initialize sensor
+  //sensor.setRate(7);
+  //sensor.setExternalFrameSync(0);
+  //sensor.setDLPFMode(0);
   if (sensor.testConnection()) {
     Serial.println("MPU6050 ready!");
   } else {
     Serial.println("Error al iniciar el sensor");
   }
   delay(100);
+
+  // Raw data readings
+  sensor.getAcceleration(&ax, &ay, &az);
+
   // Source: http://www.freescale.com/files/sensors/doc/app_note/AN3461.pdf eq. 25 and eq. 26
   // atan2 outputs the value of -π to π (radians) - see http://en.wikipedia.org/wiki/Atan2
   // It is then converted from radians to degrees
   #ifdef RESTRICT_PITCH // Eq. 25 and 26
     double roll  = atan2(ay, az) * RAD_TO_DEG;
-    double pitch = atan(-ax / sqrt(ay * ay + az * az)) * RAD_TO_DEG;
+    double pitch = atan((-1*ax) / sqrt(pow(ay, 2) + pow(az, 2))) * RAD_TO_DEG;
   #else // Eq. 28 and 29
-    double roll  = atan(ay / sqrt(ax * ax + az * az)) * RAD_TO_DEG;
-    double pitch = atan2(-ax, az) * RAD_TO_DEG;
+    double roll  = atan(ay / sqrt(pow(ax, 2) + pow(az, 2))) * RAD_TO_DEG;
+    double pitch = atan2(-1*ax, az) * RAD_TO_DEG;
   #endif
 
-  kalmanX.setAngle(roll); // Set starting angle
+  // Set starting angle
+  kalmanX.setAngle(roll);
   kalmanY.setAngle(pitch);
   gyroXangle = roll;
   gyroYangle = pitch;
@@ -103,10 +115,10 @@ void gyroMeasureLoop()
   // It is then converted from radians to degrees
   #ifdef RESTRICT_PITCH // Eq. 25 and 26
     double roll  = atan2(ay, az) * RAD_TO_DEG;
-    double pitch = atan(-ax / sqrt(ay * ay + az * az)) * RAD_TO_DEG;
+    double pitch = atan((-1*ax) / sqrt(pow(ay, 2) + pow(az, 2))) * RAD_TO_DEG;
   #else // Eq. 28 and 29
-    double roll  = atan(ay / sqrt(ax * ax + az * az)) * RAD_TO_DEG;
-    double pitch = atan2(-ax, az) * RAD_TO_DEG;
+    double roll  = atan(ay / sqrt(pow(ax, 2) + pow(az, 2))) * RAD_TO_DEG;
+    double pitch = atan2(-1*ax, az) * RAD_TO_DEG;
   #endif
 
   double gyroXrate = gx / G_R; // Convert to deg/s
@@ -118,11 +130,12 @@ void gyroMeasureLoop()
       kalmanX.setAngle(roll);
       kalAngleX = roll;
       gyroXangle = roll;
-    } else
+    } else {
       kalAngleX = kalmanX.getAngle(roll, gyroXrate, dt); // Calculate the angle using a Kalman filter
-
-    if (abs(kalAngleX) > 90)
+    }
+    if (abs(kalAngleX) > 90) {
       gyroYrate = -gyroYrate; // Invert rate, so it fits the restriced accelerometer reading
+    }
     kalAngleY = kalmanY.getAngle(pitch, gyroYrate, dt);
   #else
     // This fixes the transition problem when the accelerometer angle jumps between -180 and 180 degrees
@@ -130,11 +143,12 @@ void gyroMeasureLoop()
       kalmanY.setAngle(pitch);
       kalAngleY = pitch;
       gyroYangle = pitch;
-    } else
+    } else {
       kalAngleY = kalmanY.getAngle(pitch, gyroYrate, dt); // Calculate the angle using a Kalman filter
-
-    if (abs(kalAngleY) > 90)
+    }
+    if (abs(kalAngleY) > 90) {
       gyroXrate = -gyroXrate; // Invert rate, so it fits the restriced accelerometer reading
+    }
     kalAngleX = kalmanX.getAngle(roll, gyroXrate, dt); // Calculate the angle using a Kalman filter
   #endif
 
@@ -142,21 +156,29 @@ void gyroMeasureLoop()
   gyroYangle += gyroYrate * dt;
 
   // Reset the gyro angle when it has drifted too much
-  if (gyroXangle < -180 || gyroXangle > 180)
+  if (gyroXangle < -180 || gyroXangle > 180) {
     gyroXangle = kalAngleX;
-  if (gyroYangle < -180 || gyroYangle > 180)
+  }
+  if (gyroYangle < -180 || gyroYangle > 180) {
     gyroYangle = kalAngleY;
+  }
 
+  float ax_m_s2 = ax * (9.81/A_R);
+  float ay_m_s2 = ay * (9.81/A_R);
+  float az_m_s2 = az * (9.81/A_R);
+  float gx_deg_s = gx * (250.0/32768.0);
+  float gy_deg_s = gy * (250.0/32768.0);
+  float gz_deg_s = gz * (250.0/32768.0);
 
   // Print Data
-  #if 0 // Set to 1 to print raw values
-  Serial.print(accX); Serial.print("\t");
-  Serial.print(accY); Serial.print("\t");
-  Serial.print(accZ); Serial.print("\t");
+  #if 1 // Set to 1 to print raw values
+  Serial.print(ax_m_s2); Serial.print("\t");
+  Serial.print(ay_m_s2); Serial.print("\t");
+  Serial.print(az_m_s2); Serial.print("\t");
 
-  Serial.print(gyroX); Serial.print("\t");
-  Serial.print(gyroY); Serial.print("\t");
-  Serial.print(gyroZ); Serial.print("\t");
+  Serial.print(gx_deg_s); Serial.print("\t");
+  Serial.print(gy_deg_s); Serial.print("\t");
+  Serial.print(gz_deg_s); Serial.print("\t");
 
   Serial.print("\t");
   #endif
@@ -200,7 +222,7 @@ void gyroCalibrationSetting()
   Serial.print(gx_o); Serial.print("\t");
   Serial.print(gy_o); Serial.print("\t");
   Serial.print(gz_o); Serial.print("\t");
-  Serial.println("nnPress any character to start calibration");
+  Serial.println("\nPress any character to start calibration");
   // Waiting loop for char.
   while (true){if (Serial.available()) break;}
   Serial.println("Calibrando, no mover IMU");
@@ -238,7 +260,7 @@ void gyroCalibrationLoop() {
   // Every 100 readings, correct the offset
   if (counter==100){
     // Print readings like a table.
-    Serial.print("promedio:"); Serial.print("t");
+    Serial.print("promedio:"); Serial.print("\t");
     Serial.print(p_ax); Serial.print("\t");
     Serial.print(p_ay); Serial.print("\t");
     Serial.print(p_az); Serial.print("\t");

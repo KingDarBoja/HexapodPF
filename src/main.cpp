@@ -26,6 +26,10 @@
 #include <Kalman.h>
 
 // Include external files
+extern void gyroMeasureLoop();
+extern void gyroMeasureSetting();
+extern void gyroCalibrationLoop();
+extern void gyroCalibrationSetting();
 extern void servoAttachment();
 extern void WakeUp();
 extern void Adelante();
@@ -110,12 +114,12 @@ int limitValue(int mvalue)
 // Setup code to run once.
 void setup() {
   // Start the communication at the serial ports.
-  Serial1.begin(9600);
-  Serial.begin(9600);
+  // Serial1.begin(9600);
+  Serial.begin(115200);
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
-  servoAttachment();
+  // servoAttachment();
 
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
@@ -124,7 +128,7 @@ void setup() {
   gyroCalibrationSetting();
   //*/
 
-  /*
+  //*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Enables the gyroscope measurement setup. It will test the sensor connection
   // and get starting angles if succesful.
@@ -165,7 +169,7 @@ void loop() {
   gyroCalibrationLoop();
   //*/
 
-  /*
+  //*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Measure raw data from sensor and print the processed data.
   gyroMeasureLoop();
@@ -226,6 +230,10 @@ void loop() {
       case 'T':
         Serial.println("Derecha vieja");
         Derecha();
+        break;
+      case 'Y':
+        Serial.println("Izquierda vieja");
+        Izquierda();
         break;
       default:
         Serial.println("Default");
