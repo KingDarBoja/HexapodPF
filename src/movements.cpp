@@ -7,9 +7,9 @@ int cc = 0;
 
 // Setting up the angles (obtained from 01_Servo_Calibrator_Hexapod Code) of every PAW (mpS_#PAW_#PHALANX).
 //PAW1            //PAW2            //PAW3            //PAW4            //PAW5            //PAW6
-int mpS11 = 90;   int mpS21 = 90;   int mpS31 = 88;   int mpS41 = 79;   int mpS51 = 93;   int mpS61 = 99;
-int mpS12 = 85;   int mpS22 = 94;   int mpS32 = 86;   int mpS42 = 94;   int mpS52 = 96;   int mpS62 = 92;
-int mpS13 = 90;   int mpS23 = 90;   int mpS33 = 91;   int mpS43 = 106;   int mpS53 = 86;   int mpS63 = 87;
+int mpS11 = 83;   int mpS21 = 92;   int mpS31 = 86;   int mpS41 = 96;   int mpS51 = 80;   int mpS61 = 98;
+int mpS12 = 87;   int mpS22 = 90;   int mpS32 = 84;   int mpS42 = 86;   int mpS52 = 97;   int mpS62 = 92;
+int mpS13 = 91;   int mpS23 = 91;   int mpS33 = 93;   int mpS43 = 104;   int mpS53 = 88;   int mpS63 = 83;
 
 // Each one of the Paw-Phalanx angles is assigned to temporal variable (initial angle).
 int s11i = mpS11; int s21i = mpS21; int s31i = mpS31; int s41i = mpS41; int s51i = mpS51; int s61i = mpS61;
@@ -216,9 +216,9 @@ void Adelante() {
 void Parche() {
   //11097N12069N13064N21089N22081N23064N31101N32069N33068N
   //41094N42055N43059N51092N52060N53060N61094N62072N63061N
-  MoveCommand( 92, 90, 88, 79, 91, 99,
-               86, 92, 86, 94, 96, 92,
-               89, 90, 91, 106, 86, 83,
+  MoveCommand( 83, 92, 86, 96, 80, 98,
+               87, 90, 84, 86, 97, 92,
+               91, 91, 93, 104, 88, 83,
                10);
 }
 
@@ -395,17 +395,28 @@ void Izquierda_2() {
 
 void Adelante_2() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i+15, s22i, s32i, s42i, s52i, s62i,
+              s12i, s22i+20, s32i, s42i+20, s52i, s62i+20,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i, s32i, s42i, s52i, s62i,
-              s13i+10, s23i, s33i, s43i, s53i, s63i,
+  MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
+              s12i-8, s22i-22, s32i-16, s42i-28, s52i-2, s62i-36,
+              s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
               10);
 
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i, s32i, s42i, s52i, s62i,
-              s13i, s23i, s33i, s43i, s53i, s63i,
+  MoveCommand(s11i-45, s21i+36, s31i-12, s41i-45, s51i+36, s61i-12,
+              s12i+28, s22i+2, s32i+36, s42i+8, s52i+22, s62i,
+              s13i, s23i+10, s33i+45, s43i, s53i+10, s63i,
               10);
+
+  MoveCommand(s11i-12, s21i+36, s31i-45, s41i-12, s51i+36, s61i-45,
+              s12i-36, s22i-2, s32i-28, s42i-16, s52i-22, s62i,
+              s13i-55, s23i-10, s33i, s43i-55, s53i-10, s63i,
+              10);
+
+  MoveCommand(s11i+12, s21i-36, s31i+45, s41i+12, s51i-36, s61i+45,
+              s12i+16, s22i+2, s32i+8, s42i+16, s52i+2, s62i+16,
+              s13i+45, s23i+10, s33i, s43i+45, s53i+10, s63i+45,
+              10);
+
 }

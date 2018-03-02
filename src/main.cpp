@@ -119,7 +119,7 @@ void setup() {
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
-  // servoAttachment();
+  servoAttachment();
 
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
@@ -128,7 +128,7 @@ void setup() {
   gyroCalibrationSetting();
   //*/
 
-  //*
+  /*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Enables the gyroscope measurement setup. It will test the sensor connection
   // and get starting angles if succesful.
@@ -169,7 +169,7 @@ void loop() {
   gyroCalibrationLoop();
   //*/
 
-  //*
+  /*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Measure raw data from sensor and print the processed data.
   gyroMeasureLoop();
@@ -197,7 +197,7 @@ void loop() {
   //*/
 
   delay(200);
-  /*
+  //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
@@ -207,39 +207,40 @@ void loop() {
     Parche();
     awake = true;
   }
-  if (Serial.available()>0)
-  {
-    char movCase = Serial.read();
-    switch(movCase)
-    {
-      case 'F':
-        Serial.println("Adelante");
-        Adelante_2();
-        break;
-      case 'L':
-        Serial.println("Izquierda");
-        Izquierda_2();
-        break;
-      case 'R':
-        Serial.println("Derecha");
-        Derecha_2();
-        break;
-      case 'B':
-        Serial.println("Atras");
-        break;
-      case 'T':
-        Serial.println("Derecha vieja");
-        Derecha();
-        break;
-      case 'Y':
-        Serial.println("Izquierda vieja");
-        Izquierda();
-        break;
-      default:
-        Serial.println("Default");
-        Parche();
-        break;
-    }
-  }
+  Adelante_2();
+  // if (Serial.available()>0)
+  // {
+  //   char movCase = Serial.read();
+  //   switch(movCase)
+  //   {
+  //     case 'F':
+  //       Serial.println("Adelante");
+  //       Adelante_2();
+  //       break;
+  //     case 'L':
+  //       Serial.println("Izquierda");
+  //       Izquierda_2();
+  //       break;
+  //     case 'R':
+  //       Serial.println("Derecha");
+  //       Derecha_2();
+  //       break;
+  //     case 'B':
+  //       Serial.println("Atras");
+  //       break;
+  //     case 'T':
+  //       Serial.println("Derecha vieja");
+  //       Derecha();
+  //       break;
+  //     case 'Y':
+  //       Serial.println("Izquierda vieja");
+  //       Izquierda();
+  //       break;
+  //     default:
+  //       Serial.println("Default");
+  //       Parche();
+  //       break;
+  //   }
+  // }
   //*/
 }
