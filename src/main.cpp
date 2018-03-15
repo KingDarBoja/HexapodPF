@@ -207,40 +207,39 @@ void loop() {
     Parche();
     awake = true;
   }
-  Adelante_2();
-  // if (Serial.available()>0)
-  // {
-  //   char movCase = Serial.read();
-  //   switch(movCase)
-  //   {
-  //     case 'F':
-  //       Serial.println("Adelante");
-  //       Adelante_2();
-  //       break;
-  //     case 'L':
-  //       Serial.println("Izquierda");
-  //       Izquierda_2();
-  //       break;
-  //     case 'R':
-  //       Serial.println("Derecha");
-  //       Derecha_2();
-  //       break;
-  //     case 'B':
-  //       Serial.println("Atras");
-  //       break;
-  //     case 'T':
-  //       Serial.println("Derecha vieja");
-  //       Derecha();
-  //       break;
-  //     case 'Y':
-  //       Serial.println("Izquierda vieja");
-  //       Izquierda();
-  //       break;
-  //     default:
-  //       Serial.println("Default");
-  //       Parche();
-  //       break;
-  //   }
-  // }
+  if (Serial.available()>0)
+  {
+    char movCase = Serial.read();
+    switch(movCase)
+    {
+      case 'F':
+        Serial.println("Adelante");
+        Adelante_2();
+        break;
+      case 'L':
+        Serial.println("Izquierda");
+        Izquierda_2();
+        break;
+      case 'R':
+        Serial.println("Derecha");
+        Derecha_2();
+        break;
+      case 'B':
+        Serial.println("Atras");
+        break;
+      case 'T':
+        Serial.println("Derecha vieja");
+        Derecha();
+        break;
+      case 'Y':
+        Serial.println("Izquierda vieja");
+        Izquierda();
+        break;
+      default:
+        Serial.println("Default");
+        Parche();
+        break;
+    }
+  }
   //*/
 }

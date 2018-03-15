@@ -395,28 +395,98 @@ void Izquierda_2() {
 
 void Adelante_2() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i+20, s32i, s42i+20, s52i, s62i+20,
+              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              50);
+
+  MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
+              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
+              s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
+              50);
+
+  MoveCommand(s11i-45, s21i+36, s31i-12, s41i-45, s51i+36, s61i-12,
+              s12i+68, s22i+2, s32i+76, s42i+8, s52i+62, s62i+16,
+              s13i, s23i+10, s33i+45, s43i, s53i+10, s63i+45,
+              50);
+
+  MoveCommand(s11i-12, s21i+36, s31i-45, s41i-12, s51i+36, s61i-45,
+              s12i-76, s22i-2, s32i-68, s42i-16, s52i-62, s62i+68,
+              s13i-55, s23i-10, s33i, s43i-55, s53i-10, s63i,
+              50);
+
+  MoveCommand(s11i+12, s21i-36, s31i+45, s41i+12, s51i-36, s61i+45,
+              s12i+16, s22i+2, s32i+8, s42i+16, s52i+2, s62i-68,
+              s13i+45, s23i+10, s33i, s43i+45, s53i+10, s63i,
+              50);
+
+}
+
+// VERSION DESPUES DEL ARREGLO 15 DE MARZO
+/*
+void Adelante_2() {
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
   MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
-              s12i-8, s22i-22, s32i-16, s42i-28, s52i-2, s62i-36,
+              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
               s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
               10);
 
-  MoveCommand(s11i-45, s21i+36, s31i-12, s41i-45, s51i+36, s61i-12,
-              s12i+28, s22i+2, s32i+36, s42i+8, s52i+22, s62i,
-              s13i, s23i+10, s33i+45, s43i, s53i+10, s63i,
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+68, s22i, s32i+76, s42i, s52i+62, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i-12, s21i+36, s31i-45, s41i-12, s51i+36, s61i-45,
-              s12i-36, s22i-2, s32i-28, s42i-16, s52i-22, s62i,
-              s13i-55, s23i-10, s33i, s43i-55, s53i-10, s63i,
+  MoveCommand(s11i-45, s21i, s31i-12, s41i, s51i+36, s61i,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i-10, s23i, s33i+45, s43i, s53i+10, s63i,
               10);
 
-  MoveCommand(s11i+12, s21i-36, s31i+45, s41i+12, s51i-36, s61i+45,
-              s12i+16, s22i+2, s32i+8, s42i+16, s52i+2, s62i+16,
-              s13i+45, s23i+10, s33i, s43i+45, s53i+10, s63i+45,
+  MoveCommand(s11i-12, s21i, s31i-45, s41i, s51i+36, s61i,
+              s12i-76, s22i, s32i-68, s42i, s52i-62, s62i,
+              s13i-45, s23i, s33i+10, s43i, s53i-10, s63i,
               10);
 
+  MoveCommand(s11i+12, s21i+36, s31i+45, s41i-45, s51i-36, s61i-12,
+              s12i+16, s22i+2, s32i+8, s42i+8, s52i+2, s62i+16,
+              s13i+45, s23i+10, s33i-10, s43i-10, s53i+10, s63i+45,
+              10);
 }
+/*/
+
+// Version antes del arreglo 15 de marzo.
+/*
+void Adelante_2() {
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              50);
+
+  MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
+              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
+              s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
+              50);
+
+  MoveCommand(s11i, s21i+36, s31i, s41i-45, s51i, s61i-12,
+              s12i+68, s22i+2, s32i+76, s42i+8, s52i+62, s62i+16,
+              s13i, s23i+10, s33i, s43i-10, s53i, s63i+45,
+              50);
+
+  MoveCommand(s11i-45, s21i, s31i-12, s41i, s51i+36, s61i,
+              s12i, s22i, s32i, s42i, s52i, s62i,
+              s13i-10, s23i, s33i+45, s43i, s53i+10, s63i,
+              50);
+
+  MoveCommand(s11i-12, s21i, s31i-45, s41i, s51i+36, s61i,
+              s12i-76, s22i, s32i-68, s42i, s52i-62, s62i,
+              s13i-45, s23i, s33i+10, s43i, s53i-10, s63i,
+              50);
+
+  MoveCommand(s11i+12, s21i, s31i+45, s41i, s51i-36, s61i,
+              s12i+16, s22i, s32i+8, s42i, s52i+2, s62i,
+              s13i+45, s23i, s33i-10, s43i, s53i+10, s63i,
+              50);
+}
+/*/
