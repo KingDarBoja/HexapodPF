@@ -26,16 +26,16 @@
 #include <Kalman.h>
 
 // Include external files
+extern void gyroMeasureLoop();
+extern void gyroMeasureSetting();
+extern void gyroCalibrationLoop();
+extern void gyroCalibrationSetting();
 extern void servoAttachment();
 extern void WakeUp();
-extern void Adelante();
-extern void Atras();
-extern void Izquierda();
-extern void Derecha();
 extern void Parche();
-extern void Derecha_2();
-extern void Izquierda_2();
-extern void Adelante_2();
+extern void TurnRightSoft();
+extern void TurnLeftSoft();
+extern void ForwardTripodGait();
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
@@ -51,7 +51,6 @@ const int TP_FX = 40, EP_FX = 41,
           TP_RD = 38, EP_RD = 39,
           TP_LX = 7,  EP_LX  = 6,
           TP_RX = 49, EP_RX  = 50;
-
 
 /**
     Applies PWM to the specified trigger pin, measure the echo and returns
@@ -110,8 +109,8 @@ int limitValue(int mvalue)
 // Setup code to run once.
 void setup() {
   // Start the communication at the serial ports.
-  Serial1.begin(9600);
-  Serial.begin(9600);
+  // Serial1.begin(9600);
+  Serial.begin(115200);
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
@@ -193,7 +192,7 @@ void loop() {
   //*/
 
   delay(200);
-  /*
+  //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
@@ -210,22 +209,15 @@ void loop() {
     {
       case 'F':
         Serial.println("Adelante");
-        Adelante_2();
+        ForwardTripodGait();
         break;
       case 'L':
         Serial.println("Izquierda");
-        Izquierda_2();
+        TurnLeftSoft();
         break;
       case 'R':
         Serial.println("Derecha");
-        Derecha_2();
-        break;
-      case 'B':
-        Serial.println("Atras");
-        break;
-      case 'T':
-        Serial.println("Derecha vieja");
-        Derecha();
+        TurnRightSoft();
         break;
       default:
         Serial.println("Default");
