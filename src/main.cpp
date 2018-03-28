@@ -32,14 +32,10 @@ extern void gyroCalibrationLoop();
 extern void gyroCalibrationSetting();
 extern void servoAttachment();
 extern void WakeUp();
-extern void Adelante();
-extern void Atras();
-extern void Izquierda();
-extern void Derecha();
 extern void Parche();
-extern void Derecha_2();
-extern void Izquierda_2();
-extern void Adelante_2();
+extern void TurnRightSoft();
+extern void TurnLeftSoft();
+extern void ForwardTripodGait();
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
@@ -55,7 +51,6 @@ const int TP_FX = 40, EP_FX = 41,
           TP_RD = 38, EP_RD = 39,
           TP_LX = 7,  EP_LX  = 6,
           TP_RX = 49, EP_RX  = 50;
-
 
 /**
     Applies PWM to the specified trigger pin, measure the echo and returns
@@ -214,26 +209,15 @@ void loop() {
     {
       case 'F':
         Serial.println("Adelante");
-        Adelante_2();
+        ForwardTripodGait();
         break;
       case 'L':
         Serial.println("Izquierda");
-        Izquierda_2();
+        TurnLeftSoft();
         break;
       case 'R':
         Serial.println("Derecha");
-        Derecha_2();
-        break;
-      case 'B':
-        Serial.println("Atras");
-        break;
-      case 'T':
-        Serial.println("Derecha vieja");
-        Derecha();
-        break;
-      case 'Y':
-        Serial.println("Izquierda vieja");
-        Izquierda();
+        TurnRightSoft();
         break;
       default:
         Serial.println("Default");

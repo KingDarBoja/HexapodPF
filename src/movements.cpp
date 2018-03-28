@@ -5,7 +5,7 @@
 //GLOBAL VARIABLES
 int cc = 0;
 
-// Setting up the angles (obtained from 01_Servo_Calibrator_Hexapod Code) of every PAW (mpS_#PAW_#PHALANX).
+// Setting up the angles (obtained from HexCalibrator routine) of every PAW (mpS_#PAW_#PHALANX).
 //PAW1            //PAW2            //PAW3            //PAW4            //PAW5            //PAW6
 int mpS11 = 83;   int mpS21 = 92;   int mpS31 = 86;   int mpS41 = 96;   int mpS51 = 80;   int mpS61 = 98;
 int mpS12 = 87;   int mpS22 = 90;   int mpS32 = 84;   int mpS42 = 86;   int mpS52 = 97;   int mpS62 = 92;
@@ -120,7 +120,6 @@ void MoveCommand(int s11o, int s21o, int s31o, int s41o, int s51o, int s61o,
     } else {
       S43.write(s43i + (SweepAngles[11] / Limit)*k);
     }
-
     if (SweepAngles[12] == 0) {
       S51.write(s51o);
     } else {
@@ -160,156 +159,26 @@ void MoveCommand(int s11o, int s21o, int s31o, int s41o, int s51o, int s61o,
 }
 
 void WakeUp() {
-  //11097N12099N13094N21089N22111N23090N31101N32099N33098N
-  //41094N42085N43089N51092N52090N53090N61094N62102N63091N
   MoveCommand( 97, 89, 101, 94, 92, 94,
                99, 111, 99, 85, 90, 102,
                94, 90, 98, 89, 90, 91,
                10);
 
-  //11097N12129N13124N21089N22141N23124N31101N32129N33128N
-  //41094N42115N43119N51092N52120N53120N61094N62132N63121N
   MoveCommand( 97, 89, 101, 94, 92, 94,
                129, 141, 129, 115, 120, 132,
                124, 124, 128, 119, 120, 121,
                10);
 
-  //11097N12069N13064N21089N22081N23064N31101N32069N33068N
-  //41094N42055N43059N51092N52060N53060N61094N62072N63061N
   MoveCommand( 97, 89, 101, 94, 92, 94,
                69, 81, 69, 55, 60, 72,
                64, 64, 68, 59, 60, 61,
-               10);
-}
-
-
-void Adelante() {
-  //11097N12069N13064N21089N22141N23124N31101N32069N33068N
-  //41094N42115N43119N51092N52060N53060N61094N62132N63121N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               69, 141, 69, 115, 60, 132,
-               64, 124, 68, 119, 60, 121,
-               10);
-
-  //11097N12079N13094N21089N22141N23124N31101N32079N33058N
-  //41094N42115N43119N51072N52070N53060N61094N62132N63121N
-  MoveCommand( 97, 89, 101, 94, 72, 94,
-               79, 141, 79, 115, 70, 132,
-               94, 124, 58, 119, 60, 121,
-               10);
-
-  //11097N12129N13124N21089N22081N23064N31101N32129N33128N
-  //41094N42055N43059N51092N52120N53120N61094N62072N63061N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               129, 81, 129, 55, 120, 72,
-               124, 64, 128, 59, 120, 61,
-               10);
-
-  //11097N12129N13124N21109N22081N23064N31101N32129N33128N
-  //41094N42065N43089N51092N52120N53120N61094N62082N63051N
-  MoveCommand( 97, 109, 101, 94, 92, 94,
-               129, 81, 129, 65, 120, 82,
-               124, 64, 128, 89, 120, 51,
                10);
 }
 
 void Parche() {
-  //11097N12069N13064N21089N22081N23064N31101N32069N33068N
-  //41094N42055N43059N51092N52060N53060N61094N62072N63061N
   MoveCommand( 83, 92, 86, 96, 80, 98,
                87, 90, 84, 86, 97, 92,
                91, 91, 93, 104, 88, 83,
-               10);
-}
-
-void Atras() {
-  //11097N12069N13064N21089N22141N23124N31101N32069N33068N
-  //41094N42115N43119N51092N52060N53060N61094N62132N63121N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               69, 141, 69, 115, 60, 132,
-               64, 124, 68, 119, 60, 121,
-               10);
-
-  //11097N12069N13044N21089N22141N23124N31101N32069N33083N
-  //41094N42115N43119N51112N52060N53060N61094N62132N63121N
-  MoveCommand( 97, 89, 101, 94, 112, 94,
-               69, 141, 69, 115, 60, 132,
-               44, 124, 83, 119, 60, 121,
-               10);
-
-  //11097N12129N13124N21089N22081N23064N31101N32129N33128N
-  //41094N42055N43059N51092N52120N53120N61094N62072N63061N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               129, 81, 129, 55, 120, 72,
-               124, 64, 128, 59, 120, 61,
-               10);
-
-  //11097N12129N13124N21069N22081N23064N31101N32129N33128N
-  //41094N42065N43049N51092N52120N53120N61094N62072N63081N
-  MoveCommand( 97, 69, 101, 94, 92, 94,
-               129, 81, 129, 65, 120, 72,
-               124, 64, 128, 49, 120, 81,
-               10);
-}
-
-void Izquierda() {
-  //11097N12069N13064N21089N22081N23064N31101N32069N33068N
-  //41094N42055N43059N51092N52060N53060N61094N62072N63061N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               69, 81, 69, 55, 60, 72,
-               64, 64, 68, 59, 60, 61,
-               10);
-
-  //11127N12129N13124N21089N22081N23064N31131N32129N33128N
-  //41094N42055N43059N51122N52120N53120N61094N62072N63061N
-  MoveCommand( 127, 89, 131, 94, 122, 94,
-               129, 81, 129, 55, 120, 72,
-               124, 64, 128, 59, 120, 61,
-               10);
-
-  //11127N12069N13064N21119N22141N23124N31131N32069N33068N
-  //41124N42115N43119N51122N52060N53060N61124N62132N63121N
-  MoveCommand( 127, 119, 131, 124, 122, 124,
-               69, 141, 69, 115, 60, 132,
-               64, 124, 68, 119, 60, 121,
-               10);
-
-  //11097N12069N13064N21119N22081N23064N31101N32069N33068N
-  //41124N42055N43059N51092N52060N53060N61124N62072N63061N
-  MoveCommand( 97, 119, 101, 124, 92, 124,
-               69, 81, 69, 55, 60, 72,
-               64, 64, 68, 59, 60, 61,
-               10);
-}
-
-void Derecha() {
-
-  //11097N12069N13064N21089N22081N23064N31101N32069N33068N
-  //41094N42055N43059N51092N52060N53060N61094N62072N63061N
-  MoveCommand( 97, 89, 101, 94, 92, 94,
-               69, 81, 69, 55, 60, 72,
-               64, 64, 68, 59, 60, 61,
-               10);
-
-  //11067N12129N13124N21089N22081N23064N31071N32129N33128N
-  //41094N42055N43059N51062N52120N53120N61094N62072N63061N
-  MoveCommand( 67, 89, 71, 94, 62, 94,
-               129, 81, 129, 55, 120, 72,
-               124, 64, 128, 59, 120, 61,
-               10);
-
-  //11067N12069N13064N21059N22141N23124N31071N32069N33068N
-  //41064N42115N43119N51062N52060N53060N61064N62132N63121N
-  MoveCommand( 67, 59, 71, 64, 62, 64,
-               69, 141, 69, 115, 60, 132,
-               64, 124, 68, 119, 60, 121,
-               10);
-
-  //11097N12069N13064N21059N22081N23064N31101N32069N33068N
-  //41064N42055N43059N51092N52060N53060N61064N62072N63061N
-  MoveCommand( 97, 59, 101, 64, 92, 64,
-               69, 81, 69, 55, 60, 72,
-               64, 64, 68, 59, 60, 61,
                10);
 }
 
@@ -319,13 +188,19 @@ void Derecha() {
   for the hexapod. I use the difference between start and end angles in order to
   make it more understandable for the users.
 */
-void Derecha_2() {
+
+// Set the elevation angle for some movements (ForwardTripodGait)
+int elev_angle = 60;
+// Set the turning angle for some movements (TurnRightSoft, TurnLeftSoft)
+int turn_angle_s = 45;
+
+void TurnRightSoft() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i+30, s22i, s32i+30, s42i, s52i+30, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i-45, s21i, s31i-45, s41i, s51i-45, s61i,
+  MoveCommand(s11i-turn_angle_s, s21i, s31i-turn_angle_s, s41i, s51i-turn_angle_s, s61i,
               s12i, s22i, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
@@ -340,7 +215,7 @@ void Derecha_2() {
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i, s21i-45, s31i, s41i-45, s51i, s61i-45,
+  MoveCommand(s11i, s21i-turn_angle_s, s31i, s41i-turn_angle_s, s51i, s61i-turn_angle_s,
               s12i, s22i, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
@@ -350,13 +225,13 @@ void Derecha_2() {
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 
-  MoveCommand(s11i+45, s21i+45, s31i+45, s41i+45, s51i+45, s61i+45,
+  MoveCommand(s11i+turn_angle_s, s21i+turn_angle_s, s31i+turn_angle_s, s41i+turn_angle_s, s51i+turn_angle_s, s61i+turn_angle_s,
               s12i, s22i, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
 }
 
-void Izquierda_2() {
+void TurnLeftSoft() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i+30, s22i, s32i+30, s42i, s52i+30, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
@@ -393,100 +268,44 @@ void Izquierda_2() {
               10);
 }
 
-void Adelante_2() {
+void ForwardTripodGait() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
+              s12i, s22i+elev_angle, s32i, s42i+elev_angle, s52i, s62i+elev_angle,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              50);
+              10);
 
   MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
-              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
+              s12i-8, s22i-2-elev_angle, s32i-16, s42i-8-elev_angle, s52i-2, s62i-16-elev_angle,
               s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
-              50);
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+60, s22i, s32i+60, s42i, s52i+60, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
 
   MoveCommand(s11i-45, s21i+36, s31i-12, s41i-45, s51i+36, s61i-12,
-              s12i+68, s22i+2, s32i+76, s42i+8, s52i+62, s62i+16,
-              s13i, s23i+10, s33i+45, s43i, s53i+10, s63i+45,
-              50);
+              s12i+8, s22i+2, s32i+16, s42i+8, s52i+2, s62i+16,
+              s13i-10, s23i+10, s33i+45, s43i-10, s53i+10, s63i+45,
+              10);
 
   MoveCommand(s11i-12, s21i+36, s31i-45, s41i-12, s51i+36, s61i-45,
-              s12i-76, s22i-2, s32i-68, s42i-16, s52i-62, s62i+68,
-              s13i-55, s23i-10, s33i, s43i-55, s53i-10, s63i,
-              50);
+              s12i-16-elev_angle, s22i-2, s32i-8-elev_angle, s42i-16, s52i-2-elev_angle, s62i-8,
+              s13i-45, s23i-10, s33i+10, s43i-45, s53i-10, s63i+10,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i+elev_angle, s32i, s42i+elev_angle, s52i, s62i+elev_angle,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
 
   MoveCommand(s11i+12, s21i-36, s31i+45, s41i+12, s51i-36, s61i+45,
-              s12i+16, s22i+2, s32i+8, s42i+16, s52i+2, s62i-68,
-              s13i+45, s23i+10, s33i, s43i+45, s53i+10, s63i,
-              50);
-
-}
-
-// VERSION DESPUES DEL ARREGLO 15 DE MARZO
-/*
-void Adelante_2() {
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
-
-  MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
-              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
-              s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
+              s12i+16, s22i+2, s32i+8, s42i+16, s52i+2, s62i+8,
+              s13i+45, s23i+10, s33i-10, s43i+45, s53i+10, s63i-10,
               10);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i+68, s22i, s32i+76, s42i, s52i+62, s62i,
+              s12i, s22i-elev_angle, s32i, s42i-elev_angle, s52i, s62i-elev_angle,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
-
-  MoveCommand(s11i-45, s21i, s31i-12, s41i, s51i+36, s61i,
-              s12i, s22i, s32i, s42i, s52i, s62i,
-              s13i-10, s23i, s33i+45, s43i, s53i+10, s63i,
-              10);
-
-  MoveCommand(s11i-12, s21i, s31i-45, s41i, s51i+36, s61i,
-              s12i-76, s22i, s32i-68, s42i, s52i-62, s62i,
-              s13i-45, s23i, s33i+10, s43i, s53i-10, s63i,
-              10);
-
-  MoveCommand(s11i+12, s21i+36, s31i+45, s41i-45, s51i-36, s61i-12,
-              s12i+16, s22i+2, s32i+8, s42i+8, s52i+2, s62i+16,
-              s13i+45, s23i+10, s33i-10, s43i-10, s53i+10, s63i+45,
-              10);
 }
-/*/
-
-// Version antes del arreglo 15 de marzo.
-/*
-void Adelante_2() {
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i+60, s32i, s42i+60, s52i, s62i+60,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              50);
-
-  MoveCommand(s11i+45, s21i-36, s31i+12, s41i+45, s51i-36, s61i+12,
-              s12i-8, s22i-62, s32i-16, s42i-68, s52i-2, s62i-76,
-              s13i+10, s23i-10, s33i-45, s43i+10, s53i-10, s63i-45,
-              50);
-
-  MoveCommand(s11i, s21i+36, s31i, s41i-45, s51i, s61i-12,
-              s12i+68, s22i+2, s32i+76, s42i+8, s52i+62, s62i+16,
-              s13i, s23i+10, s33i, s43i-10, s53i, s63i+45,
-              50);
-
-  MoveCommand(s11i-45, s21i, s31i-12, s41i, s51i+36, s61i,
-              s12i, s22i, s32i, s42i, s52i, s62i,
-              s13i-10, s23i, s33i+45, s43i, s53i+10, s63i,
-              50);
-
-  MoveCommand(s11i-12, s21i, s31i-45, s41i, s51i+36, s61i,
-              s12i-76, s22i, s32i-68, s42i, s52i-62, s62i,
-              s13i-45, s23i, s33i+10, s43i, s53i-10, s63i,
-              50);
-
-  MoveCommand(s11i+12, s21i, s31i+45, s41i, s51i-36, s61i,
-              s12i+16, s22i, s32i+8, s42i, s52i+2, s62i,
-              s13i+45, s23i, s33i-10, s43i, s53i+10, s63i,
-              50);
-}
-/*/
