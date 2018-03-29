@@ -176,9 +176,9 @@ void WakeUp() {
 }
 
 void Parche() {
-  MoveCommand( 83, 92, 86, 96, 80, 98,
-               87, 90, 84, 86, 97, 92,
-               91, 91, 93, 104, 88, 83,
+  MoveCommand( mpS11, mpS21, mpS31, mpS41, mpS51, mpS61,
+               mpS12, mpS22, mpS32, mpS42, mpS52, mpS62,
+               mpS13, mpS23, mpS33, mpS43, mpS53, mpS63,
                10);
 }
 
@@ -308,4 +308,36 @@ void ForwardTripodGait() {
               s12i, s22i-elev_angle, s32i, s42i-elev_angle, s52i, s62i-elev_angle,
               s13i, s23i, s33i, s43i, s53i, s63i,
               10);
+}
+
+void PitchWalking() {
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+elev_angle, s22i, s32i, s42i+elev_angle, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i+58, s21i, s31i, s41i+58, s51i, s61i,
+              s12i-elev_angle, s22i, s32i, s42i-elev_angle, s52i, s62i,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i, s22i, s32i+elev_angle, s42i, s52i, s62i+elev_angle,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i-58, s41i, s51i, s61i-58,
+              s12i, s22i, s32i-elev_angle, s42i, s52i, s62i-elev_angle,
+              s13i, s23i, s33i, s43i, s53i, s63i,
+              10);
+
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+              s12i+74, s22i+32, s32i, s42i, s52i+32, s62i+74,
+              s13i+148, s23i+118, s33i, s43i, s53i+118, s63i+148,
+              10);
+
+  // MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+  //             s12i, s22i, s32i, s42i, s52i, s62i,
+  //             s13i, s23i, s33i, s43i, s53i, s63i,
+  //             10);
 }
