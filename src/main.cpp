@@ -37,6 +37,7 @@ extern void TurnRightSoft();
 extern void TurnLeftSoft();
 extern void ForwardTripodGait();
 extern void PitchWalking();
+extern void ForwardWaveGait();
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
@@ -209,7 +210,7 @@ void loop() {
     switch(movCase)
     {
       case 'F':
-        Serial.println("Adelante");
+        Serial.println("Adelante Tripod");
         ForwardTripodGait();
         break;
       case 'L':
@@ -223,6 +224,10 @@ void loop() {
       case 'G':
         Serial.println("Inclinado hacia arriba");
         PitchWalking();
+        break;
+      case 'H':
+        Serial.println("Adelante Wave");
+        ForwardWaveGait();
         break;
       default:
         Serial.println("Default");
