@@ -101,15 +101,81 @@ def IK_Equations(geometry_values):
 # Documentation at http://effbot.org/tkinterbook/tkinter-index.htm
 # To initialize Tkinter, we create a Tk root widget (an ordinary window).
 root = Tk()
-# We create a label widget as child to the root window.
-title_gui = Label(root, text="Hexapod Inverse Kinematics GUI",
-                     font=("default", 14))
-alpha_angle = Scale(root, from_=0, to=45, orient=HORIZONTAL)
+root.title('Hexapod Inverse Kinematics GUI')
+root.configure(background='white')
+# Frame widgets to split our window
+# - Top: For inputs and display isometric hexapod plot.
+# - Bottom: For the rest of hexapod plots.
+topFrame = Frame(root)
+topFrame.pack(fill=X)
+bottomFrame = Frame(root)
+bottomFrame.pack(fill=X, side=BOTTOM)
+
+# Top frame split into another two frames.
+leftTopFrame = Frame(topFrame)
+leftTopFrame.pack(fill=X, side=LEFT)
+rightTopFrame = Frame(topFrame)
+rightTopFrame.pack(fill=X)
+
+
+# rightTopFrame widgets
+title_gui = Label(leftTopFrame, text="Hexapod isometric view",
+                  font=("default", 14))
+
+label_paw1 = Label(rightTopFrame, text='Paw N°1')
+label_paw2 = Label(rightTopFrame, text='Paw N°2')
+label_paw3 = Label(rightTopFrame, text='Paw N°3')
+label_paw4 = Label(rightTopFrame, text='Paw N°4')
+label_paw5 = Label(rightTopFrame, text='Paw N°5')
+label_paw6 = Label(rightTopFrame, text='Paw N°6')
+
+
+def set_scale_label(index, val):
+    scaleValue[index].set('{}'.format(val))
+
+
+x_paw1 = Scale(rightTopFrame, from_=0, to=10,
+               showvalue=0)
+x_paw1_val = Label(rightTopFrame, text='5')
+y_paw1 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw1_val = Label(rightTopFrame, text='5')
+z_paw1 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+x_paw2 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw2 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+z_paw2 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+x_paw3 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw3 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+z_paw3 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+x_paw4 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw4 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+z_paw4 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+x_paw5 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw5 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+z_paw5 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+x_paw6 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+y_paw6 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+z_paw6 = Scale(rightTopFrame, from_=0, to=10, showvalue=0)
+
+alpha_angle = Scale(rightTopFrame, from_=0, to=45, orient=HORIZONTAL)
+beta_angle = Scale(rightTopFrame, from_=0, to=45, orient=HORIZONTAL)
+yaw_angle = Scale(rightTopFrame, from_=0, to=360, orient=HORIZONTAL)
 
 # We call the pack method on this widget.
 # This tells it to size itself to fit the given text, and make itself visible.
-title_gui.pack()
-alpha_angle.pack()
+title_gui.grid(row=0)
+
+label_paw1.grid(row=0, column=0, columnspan=3)
+x_paw1.grid(row=1, column=0)
+x_paw1_val.grid(row=2, column=0)
+y_paw1.grid(row=1, column=1)
+y_paw1_val.grid(row=2, column=1)
+z_paw1.grid(row=1, column=2)
+
 
 # We display the window using the Tkinter event loop.
 # The program will stay in the event loop until we close the window
