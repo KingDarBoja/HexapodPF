@@ -26,7 +26,7 @@
 #include <Kalman.h>
 
 // Include external files
-extern void gyroMeasureLoop();
+extern double gyroMeasureLoop();
 extern void gyroMeasureSetting();
 extern void gyroCalibrationLoop();
 extern void gyroCalibrationSetting();
@@ -41,16 +41,17 @@ extern void ForwardWaveGait();
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
+double result;
 
 // Declare string variables for the ultrasonic measures.
 String stringFX = "0", stringLD = "0", stringRD = "0", stringLX = "0", stringRX = "0";
-String msg = "0:0:0:0:0:0"; // string to be sent, default.
+String msg = "0:0:0:0:0:0:0"; // string to be sent, default.
 
 // ULTRASONIC SENSOR TRIGGER AND ECHO PINS (TP / EP)
 // F - Front, L - Left, R - Right, D - Diagonal, X - Side
-const int TP_FX = 40, EP_FX = 41,
+const int TP_FX = 28, EP_FX = 29,
           TP_LD = 5,  EP_LD = 4,
-          TP_RD = 38, EP_RD = 39,
+          TP_RD = 26, EP_RD = 27,
           TP_LX = 7,  EP_LX  = 6,
           TP_RX = 49, EP_RX  = 50;
 
@@ -111,7 +112,7 @@ int limitValue(int mvalue)
 // Setup code to run once.
 void setup() {
   // Start the communication at the serial ports.
-  // Serial1.begin(9600);
+  Serial1.begin(115200);
   Serial.begin(115200);
 
   // Pin assigment of every servo of the hexapod.
@@ -125,7 +126,7 @@ void setup() {
   gyroCalibrationSetting();
   //*/
 
-  /*
+  //*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Enables the gyroscope measurement setup. It will test the sensor connection
   // and get starting angles if succesful.
@@ -137,7 +138,7 @@ void setup() {
   hexcal.HexPawPin(43, 44, 45, 14, 15, 16, 9, 10, 11, 22, 23, 24, 46, 47, 48, 51, 52, 53);
   //*/
 
-  /*
+  //*
   // ===================== ULTRASONIC MEASURE =====================
   // Enables all the ultrasonic sensors for obstacle measurement.
   // Warning: Not connected sensors will heavily slow down the code.
@@ -166,13 +167,13 @@ void loop() {
   gyroCalibrationLoop();
   //*/
 
-  /*
+  //*
   // ======================= GYROSCOPE MEASUREMENT =======================
   // Measure raw data from sensor and print the processed data.
-  gyroMeasureLoop();
+  result = gyroMeasureLoop();
   //*/
 
-  /*
+  //*
   // ========================= ULTRASONIC MEASURE =========================
   // Checking the values of Ultrasonic sensor and storing them into int variables.
   int cm_FX = ping(TP_FX, EP_FX);
@@ -189,8 +190,8 @@ void loop() {
   stringLX =  String(limitValue(cm_LX));
 
   // Message string to be send
-  msj = stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX;
-  Serial1.println(msj);
+  msg = stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX + ":" + String(result);
+  Serial1.println(msg);
   //*/
 
   delay(200);
@@ -204,9 +205,9 @@ void loop() {
     Parche();
     awake = true;
   }
-  if (Serial.available()>0)
+  if (Serial1.available()>0)
   {
-    char movCase = Serial.read();
+    char movCase = Serial1.read();
     switch(movCase)
     {
       case 'F':
