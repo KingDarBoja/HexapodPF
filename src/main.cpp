@@ -117,7 +117,7 @@ void setup() {
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
-  servoAttachment();
+  // servoAttachment();
 
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
@@ -190,12 +190,12 @@ void loop() {
   stringLX =  String(limitValue(cm_LX));
 
   // Message string to be send
-  msg = stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX + ":" + String(result);
-  Serial1.println(msg);
+  msg = "MSG:" + stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX + ":" + String(result);
+  Serial.println(msg);
   //*/
 
   delay(200);
-  //*
+  /*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
@@ -205,9 +205,9 @@ void loop() {
     Parche();
     awake = true;
   }
-  if (Serial1.available()>0)
+  if (Serial.available()>0)
   {
-    char movCase = Serial1.read();
+    char movCase = Serial.read();
     switch(movCase)
     {
       case 'F':

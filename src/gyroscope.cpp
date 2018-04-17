@@ -67,16 +67,16 @@ void gyroMeasureSetting()
     TWBR = ((F_CPU / 400000) - 16) / 2; // Set I2C frequency to 400kHz
   #endif
   sensor.initialize();        // Initialize sensor
-  //sensor.setRate(7);
-  //sensor.setExternalFrameSync(0);
-  //sensor.setDLPFMode(0);
-  /*
+  sensor.setRate(7);
+  sensor.setExternalFrameSync(0);
+  sensor.setDLPFMode(0);
+
   if (sensor.testConnection()) {
-    Serial.println("MPU6050 ready!");
+    Serial1.println("MPU6050 ready!");
   } else {
-    Serial.println("Error al iniciar el sensor");
+    Serial1.println("Error al iniciar el sensor");
   }
-  */
+
   delay(100);
 
   // Raw data readings
