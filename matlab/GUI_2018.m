@@ -134,7 +134,7 @@ delete(instrfindall);
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbmodem34');
 elseif isunix
     s = serial('/dev/tty.*');
 elseif ispc
@@ -307,8 +307,8 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     
     axes(handles.polar)
     phimat_r = degtorad(phimat);
-    hex_m = sqrt(coordx.^2 + coordy.^2);
-    hex_p = atan2(coordy,coordx);
+    hex_m = sqrt(coordx(end).^2 + coordy(end).^2);
+    hex_p = atan2(coordy(end),coordx(end));
 
     ang = 0 : .01 : 2 * pi;
     lenghex = size(hex_m);   
