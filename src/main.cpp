@@ -117,7 +117,7 @@ void setup() {
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
-  // servoAttachment();
+  servoAttachment();
 
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
@@ -190,12 +190,12 @@ void loop() {
   stringLX =  String(limitValue(cm_LX));
 
   // Message string to be send
-  msg = "MSG:" + stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX + ":" + String(result);
+  msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
   Serial.println(msg);
   //*/
 
   delay(200);
-  /*
+  //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
@@ -211,27 +211,27 @@ void loop() {
     switch(movCase)
     {
       case 'F':
-        Serial.println("Adelante Tripod");
+        //Serial.println("Adelante Tripod");
         ForwardTripodGait();
         break;
       case 'L':
-        Serial.println("Izquierda");
+        //Serial.println("Izquierda");
         TurnLeftSoft();
         break;
       case 'R':
-        Serial.println("Derecha");
+        //Serial.println("Derecha");
         TurnRightSoft();
         break;
       case 'G':
-        Serial.println("Inclinado hacia arriba");
+        //Serial.println("Inclinado hacia arriba");
         PitchWalking();
         break;
       case 'H':
-        Serial.println("Adelante Wave");
+        //Serial.println("Adelante Wave");
         ForwardWaveGait();
         break;
       default:
-        Serial.println("Default");
+        //Serial.println("Default");
         Parche();
         break;
     }

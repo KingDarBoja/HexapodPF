@@ -129,21 +129,18 @@ function Iniciar_Callback(hObject, eventdata, handles)
 
 % Limpia la consola
 clc;
-
-% Elimina de la memoria y del espacio de trabajo el objeto de puerto serie
-% 's' con el fin de dejar libre dicho puerto.
-delete(s)
-clear s
+% Elimina cualquier puerto abierto
+delete(instrfindall);
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty**');
+    s = serial('/dev/tty.usbmodem1431');
 elseif isunix
     s = serial('/dev/tty.*');
 elseif ispc
     s = serial('COM*');
 else
-    disp('Platforma no soportada')
+    disp('Platforma no soportada');
 end
 
 % Configuración de las propiedades del objeto 's'.
@@ -193,6 +190,7 @@ mapLx(cont) = 0;
 mapLy(cont) = 0;
 phimat = radtodeg(phi);
 betamat(cont) = 0;
+sensor_val = zeros(1,6);
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
@@ -205,11 +203,15 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     
     % Obtiene el valor del checkbox
     checkbox1Value = get(handles.checkbox1, 'value');
-    if checkbox1Value
+    if ~checkbox1Value
         set(handles.text11,'String', 'Ejecutandosé');
     else
         set(handles.text11,'String', 'Detenido');
     end
+    
+    % Actualiza las coordenadas en base a los nuevos valores.
+    diff_coordx = abs(cf(1)-ci(1));
+    diff_coordy = abs(cf(2)-ci(2));
     
     % Ángulo entre el origen y el destino utilizando la función atan2 en el
     % intervalo [-pi, pi]
@@ -238,33 +240,37 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
             case resultFZD >= 0 && resultFZD < 1
                 fprintf(s, '%c', 'L');
                 set(handles.Fuzzy_out,'String','Izquierda');
-                phi = phi+alpha_t;
+                disp("Izquierda" + newline + sensorLect + num2str(betarad));
+                phi = phi + alpha_t;
             % Resultado: Avanza
             case resultFZD >= 1 && resultFZD < 2
                 fprintf(s, '%c', 'F');
                 set(handles.Fuzzy_out,'String','Adelante');
-                
+                disp("Adelante" + newline + sensorLect + num2str(betarad));
                 % Realiza los cálculos de la ubicación de los objetos.
-                ci(1)=ci(1)+A*cos(phi);
-                ci(2)=ci(2)+A*sin(phi);
-                coordx(cont)=ci(1);
-                coordy(cont)=ci(2);
-                mapRx(cont)=coordx(cont)+sensorR*cos(phi-pi/2);
-                mapRy(cont)=coordy(cont)+sensorR*sin(phi-pi/2);
-                mapLx(cont)=coordx(cont)+sensorL*cos(phi+pi/2);
-                mapLy(cont)=coordy(cont)+sensorL*sin(phi+pi/2);
+                ci(1) = ci(1) + A*cos(phi);
+                ci(2) = ci(2) + A*sin(phi);
+                coordx(cont) = ci(1);
+                coordy(cont) = ci(2);
+                mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
+                mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
+                mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
+                mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);
                 % Incrementa el contador.
-                cont=cont+1;
+                cont = cont + 1;
             % Resultado: Giro a la derecha
             case resultFZD >= 2 && resultFZD < 3
                 fprintf(s, '%c', 'R');
                 set(handles.Fuzzy_out,'String','Derecha')
-                phi=phi-alpha_t;
+                disp("Derecha" + newline + sensorLect + num2str(betarad));
+                phi = phi - alpha_t;
             % Resultado: Caminata lenta (Wave gait).
             otherwise
                 fprintf(s, '%c', 'H');
                 set(handles.Fuzzy_out,'String','Wave')
+                disp("Por defecto" + newline + sensorLect + num2str(betarad));
         end
+        pause(1);
     end
     % Actualiza el gráfico.
     axes(handles.graf_arana)
@@ -290,7 +296,7 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     title('Ángulo Destino')
     
     set(handles.Salida_sensores,'String', ...
-        num2cell(reshape(sensor_val(1:5),4,1)))
+        num2cell(reshape(sensor_val(1:5),5,1)))
     txtcix=num2str(coordx(cont));
     txtciy=num2str(coordy(cont));
     txtphi=num2str(phimat(cont));
@@ -318,6 +324,11 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
 
     drawnow
 end
+% Elimina de la memoria y del espacio de trabajo el objeto de puerto serie
+% 's' con el fin de dejar libre dicho puerto.
+fclose(s);
+delete(s)
+clear s
 
 
 
