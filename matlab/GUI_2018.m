@@ -216,7 +216,7 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     % Ángulo entre el origen y el destino utilizando la función atan2 en el
     % intervalo [-pi, pi]
     delta = atan2(diff_coordy, diff_coordx);
-    betarad = radtodeg(delta);
+    betarad = radtodeg(phi) - abs(radtodeg(delta));
     
     % Obtiene las lecturas del puerto serie sin el terminador.
     sensorLect = fgetl(s);
@@ -297,10 +297,10 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     
     set(handles.Salida_sensores,'String', ...
         num2cell(reshape(sensor_val(1:5),5,1)))
-    txtcix=num2str(coordx(cont));
-    txtciy=num2str(coordy(cont));
-    txtphi=num2str(phimat(cont));
-    txtbet=num2str(betamat(cont));
+    txtcix=num2str(coordx(end));
+    txtciy=num2str(coordy(end));
+    txtphi=num2str(phimat(end));
+    txtbet=num2str(betamat(end));
     info = {txtphi;'' ; txtbet;'' ; txtcix;'' ; txtciy;};
     set(handles.inst_info,'String',info)
     
