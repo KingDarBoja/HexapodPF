@@ -126,141 +126,156 @@ function Iniciar_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 % Clean ports caché.
+
+% Limpia la consola
 clc;
-delete(instrfindall);
 
-cf=[str2num(get(handles.cfx,'String')),str2num(get(handles.cfy,'String'))];       %coordenadas de destino
-ci=[str2num(get(handles.cix,'String')),str2num(get(handles.ciy,'String'))];       %coordenadas iniciales de la araña
-phi=pi/2;                                                                           %angulo inicial de la araña
-A=8;                                                                                %cuanto avanza la araña por cada forward (cm)
-alphal=degtorad(90/7);                                                           %angulo de giro de la araña izquierda
-alphar=degtorad(90/7);                                                           %angulo de giro de la araña derecha
-error=10;                                                                         %umbral de error aceptable    (cm)
+% Elimina de la memoria y del espacio de trabajo el objeto de puerto serie
+% 's' con el fin de dejar libre dicho puerto.
+delete(s)
+clear s
 
+% Detecta el sistema operativo que se está utilizando.
+if ismac
+    s = serial('/dev/tty**');
+elseif isunix
+    s = serial('/dev/tty.*');
+elseif ispc
+    s = serial('COM*');
+else
+    disp('Platforma no soportada')
+end
 
-                
-fzd = readfis('Fuzzy_Logic_Design_2018.fis');
-
-comPort = '/dev/tty.usbmodem1431';
-
-s = serial(comPort);
+% Configuración de las propiedades del objeto 's'.
 set(s,'DataBits',8);
 set(s,'StopBits',1);
 set(s,'BaudRate',115200);
 set(s,'Parity','none');
+
+% Conecta el objeto al dispositivo y muestra su estado
 fopen(s);
-i=1;
+if strcmp(s.Status,'open')
+    disp('Conexión exitosa al puerto especificado.')
+else
+    disp('Conexión fallida al puerto especificado.')
+end
+
+% Coordenadas finales (meta).
+cf = [str2double(get(handles.cfx,'String')), ...
+    str2double(get(handles.cfy,'String'))];
+% Coordenadas iniciales (partida).
+ci = [str2double(get(handles.cix,'String')), ...
+    str2double(get(handles.ciy,'String'))];
+% Ángulo inicial del robot.
+phi = pi/2;
+% Desplazamiento por avance en cm.
+A = 8;
+% Ángulo de giro por movimiento de giro izquierda / derecha.
+alpha_t = degtorad(45);
+% Umbral de error permitido en cm.
+err_perm = 10;
+
+% Inicializa el contador.
+cont = 1;
+
+% Obtiene el estado del widget 'checkbox1'
 checkbox1Value = get(handles.checkbox1, 'value');
-while (((abs(cf(1)-ci(1)) > error) || (abs(cf(2)-ci(2)) > error)) && checkbox1Value == 0 ) 
-    checkbox1Value = get(handles.checkbox1, 'value');
-    a=num2str(checkbox1Value);
-   
-    set(handles.text11,'String',a)
+diff_coordx = abs(cf(1)-ci(1));
+diff_coordy = abs(cf(2)-ci(2));
+
+% Inizializa las variables que corresponden a las coordenadas del robot y
+% los obstaculos para dibujarlos en el mapa.
+coordx = ci(1);
+coordy = ci(2);
+mapRx(cont) = 0;
+mapRy(cont) = 0;
+mapLx(cont) = 0;
+mapLy(cont) = 0;
+phimat = radtodeg(phi);
+betamat(cont) = 0;
+
+% Carga el archivo que contiene las funciones de membresía y reglas para el
+% algoritmo de lógica difusa.
+fzd = readfis('Fuzzy_Logic_Design_2018.fis');
+
+% Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
+% programa utilizando el estado del checkbox.
+while (diff_coordx > err_perm || diff_coordy > err_perm ...
+        && checkbox1Value == 0)
     
-    %angulo entre el orgien y el destino
-    delta=atan((cf(2)-ci(2))/(cf(1)-ci(1)));
-
-    %II cuadrante
-    if (cf(1)-ci(1)<0 && cf(2)-ci(2)>0)                 
-        gama=delta+pi;
+    % Obtiene el valor del checkbox
+    checkbox1Value = get(handles.checkbox1, 'value');
+    if checkbox1Value
+        set(handles.text11,'String', 'Ejecutandosé');
     else
-        %I cuadrante
-        if (cf(1)-ci(1)>0 && cf(2)-ci(2)>0)
-            gama=delta;
-        else
-            %III cuadrante
-            if (cf(1)-ci(1)<0 && cf(2)-ci(2)<0)
-                gama=delta+pi;
-            else
-                %IV cuadrante
-                if (cf(1)-ci(1)>0 && cf(2)-ci(2)<0)
-                    gama=delta;
-                else
-                    gama=0;
-                end
-            end
-        end
+        set(handles.text11,'String', 'Detenido');
     end
-
-    % Obtiene las lecturas del puerto serie
-    sensorLect = fgets(s);
-    disp(sensorLect);
+    
+    % Ángulo entre el origen y el destino utilizando la función atan2 en el
+    % intervalo [-pi, pi]
+    delta = atan2(diff_coordy, diff_coordx);
+    betarad = radtodeg(delta);
+    
+    % Obtiene las lecturas del puerto serie sin el terminador.
+    sensorLect = fgetl(s);
+    
     % Verificamos si los primeros 3 caracteres son los necesarios para
-    % ejecutar la lògica difusa, en este caso, MSG.
-    if (extractBefore(sensorLect,4) == 'MSG')
+    % ejecutar la lógica difusa, en este caso, MSG.
+    if (strcmp(extractBefore(sensorLect,4),'MSG'))
+        % Separa la cadena de caracteres y los guarda en una celda para
+        % luego ser convertidos en un arreglo de tipo 'double'.
         dirSL = strsplit(sensorLect,':');
-        for c = 1:length(dirSL)
-            if str2double(dirSL{1,c}) > 100
-                dirSL{1,c} = '100';
-            end
-        end
-        sensorFU = str2double(dirSL{1,2});
-        sensorRU = str2double(dirSL{1,3});
-        sensorLU = str2double(dirSL{1,4});
-        sensorR = str2double(dirSL{1,5});
-        sensorL = str2double(dirSL{1,6});
-        slope_y = str2double(dirSL{1,7});
-
-        betarad=radtodeg(gama);
-        resultFZD = evalfis([sensorFU,sensorLU,sensorRU,sensorL,sensorR,betarad,slope_y],fzd);
-
-        if (resultFZD >= 0 && resultFZD <1) 
-            fprintf(s, '%c', 'L');
-            set(handles.Fuzzy_out,'String','Izquierda')
-            phi=phi+alphal;
-        else
-            if (resultFZD >=1 && resultFZD < 2)
+        sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
+        sensor_val(sensor_val > 100) = 100;
+        
+        % Ejecuta la lógica difusa basado en el archivo
+        resultFZD = evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd);
+        
+        % Basado en el resultado de la lógica difusa, realiza la siguiente
+        % toma de decisión y envía el comando a tráves del puerto serie.
+        switch true
+            % Resultado: Giro a la izquierda.
+            case resultFZD >= 0 && resultFZD < 1
+                fprintf(s, '%c', 'L');
+                set(handles.Fuzzy_out,'String','Izquierda');
+                phi = phi+alpha_t;
+            % Resultado: Avanza
+            case resultFZD >= 1 && resultFZD < 2
                 fprintf(s, '%c', 'F');
-                set(handles.Fuzzy_out,'String','Adelante')
+                set(handles.Fuzzy_out,'String','Adelante');
+                
+                % Realiza los cálculos de la ubicación de los objetos.
                 ci(1)=ci(1)+A*cos(phi);
                 ci(2)=ci(2)+A*sin(phi);
-                coordx(i)=ci(1);
-                coordy(i)=ci(2);
-                mapRx(i)=coordx(i)+sensorR*cos(phi-pi/2);
-                mapRy(i)=coordy(i)+sensorR*sin(phi-pi/2);
-                mapLx(i)=coordx(i)+sensorL*cos(phi+pi/2);
-                mapLy(i)=coordy(i)+sensorL*sin(phi+pi/2);
-                axes(handles.graf_arana)
-                p1=plot(mapRx,mapRy,'o');
-                set(p1,'Color','red')
-                hold on
-                p2=plot(mapLx,mapLy,'o');
-                set(p2,'Color','blue')
-                p3=plot(ci(1),ci(2));
-                set(p3,'Color','green')
-                title('Mapa')
-            else
-                if (resultFZD >=2 && resultFZD < 3)
-                    fprintf(s, '%c', 'R');
-                    set(handles.Fuzzy_out,'String','Derecha')
-                    phi=phi-alphar;
-                else
-                    fprintf(s, '%c', 'H');
-                    set(handles.Fuzzy_out,'String','Wave')
-                end
-            end
+                coordx(cont)=ci(1);
+                coordy(cont)=ci(2);
+                mapRx(cont)=coordx(cont)+sensorR*cos(phi-pi/2);
+                mapRy(cont)=coordy(cont)+sensorR*sin(phi-pi/2);
+                mapLx(cont)=coordx(cont)+sensorL*cos(phi+pi/2);
+                mapLy(cont)=coordy(cont)+sensorL*sin(phi+pi/2);
+                % Incrementa el contador.
+                cont=cont+1;
+            % Resultado: Giro a la derecha
+            case resultFZD >= 2 && resultFZD < 3
+                fprintf(s, '%c', 'R');
+                set(handles.Fuzzy_out,'String','Derecha')
+                phi=phi-alpha_t;
+            % Resultado: Caminata lenta (Wave gait).
+            otherwise
+                fprintf(s, '%c', 'H');
+                set(handles.Fuzzy_out,'String','Wave')
         end
-        phimat(i)=radtodeg(phi);
-        betamat(i)=betarad;
-        coordx(i)=ci(1);
-        coordy(i)=ci(2);
-        sensFU=num2str(sensorFU);
-        sensRU=num2str(sensorRU);
-        sensR=num2str(sensorR);
-        sensLU=num2str(sensorLU);
-        sensL=num2str(sensorL);
-    else
-        phimat(i)=0;
-        betamat(i)=radtodeg(gama);
-        coordx(i)=0;
-        coordy(i)=0;
-        sensFU='Default';
-        sensRU='Default';
-        sensR='Default';
-        sensLU='Default';
-        sensL='Default';
     end
-    
+    % Actualiza el gráfico.
+    axes(handles.graf_arana)
+    p1=plot(mapRx,mapRy,'o');
+    set(p1,'Color','red')
+    hold on
+    p2=plot(mapLx,mapLy,'o');
+    set(p2,'Color','blue')
+    p3=plot(ci(1),ci(2));
+    set(p3,'Color','green')
+    title('Mapa')
     
     axes(handles.graf_arana)
     plot(coordx,coordy)
@@ -274,13 +289,12 @@ while (((abs(cf(1)-ci(1)) > error) || (abs(cf(2)-ci(2)) > error)) && checkbox1Va
     plot(betamat)
     title('Ángulo Destino')
     
-    
-    sensALL = {sensFU; '' ; sensRU;'' ; sensLU;'' ; sensR;'' ; sensL};
-    set(handles.Salida_sensores,'String',sensALL)
-    txtcix=num2str(coordx(i));
-    txtciy=num2str(coordy(i));
-    txtphi=num2str(phimat(i));
-    txtbet=num2str(betamat(i));
+    set(handles.Salida_sensores,'String', ...
+        num2cell(reshape(sensor_val(1:5),4,1)))
+    txtcix=num2str(coordx(cont));
+    txtciy=num2str(coordy(cont));
+    txtphi=num2str(phimat(cont));
+    txtbet=num2str(betamat(cont));
     info = {txtphi;'' ; txtbet;'' ; txtcix;'' ; txtciy;};
     set(handles.inst_info,'String',info)
     
@@ -301,12 +315,8 @@ while (((abs(cf(1)-ci(1)) > error) || (abs(cf(2)-ci(2)) > error)) && checkbox1Va
     h3c = polar(ang, f_ang);
     set(h3c,'color','k','linewidth',2,'LineStyle','--')
     hold off
-    
 
-    
     drawnow
-    
-    i=i+1;
 end
 
 
