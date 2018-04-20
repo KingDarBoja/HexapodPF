@@ -134,7 +134,7 @@ delete(instrfindall);
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty.usbmodem34');
+    s = serial('/dev/tty.usbmodem1431');
 elseif isunix
     s = serial('/dev/tty.*');
 elseif ispc
@@ -156,7 +156,7 @@ if strcmp(s.Status,'open')
 else
     disp('Conexión fallida al puerto especificado.')
 end
-
+pause(2);
 % Coordenadas finales (meta).
 cf = [str2double(get(handles.cfx,'String')), ...
     str2double(get(handles.cfy,'String'))];
@@ -166,7 +166,7 @@ ci = [str2double(get(handles.cix,'String')), ...
 % Ángulo inicial del robot.
 phi = pi/2;
 % Desplazamiento por avance en cm.
-A = 8;
+A = 1;
 % Ángulo de giro por movimiento de giro izquierda / derecha.
 alpha_t = degtorad(45);
 % Umbral de error permitido en cm.
@@ -194,7 +194,7 @@ sensor_val = zeros(1,6);
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018.fis');
+fzd = readfis('fuzzy_logic_new_ruleset.fis');
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
@@ -231,22 +231,25 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
         sensor_val(sensor_val > 100) = 100;
         
         % Ejecuta la lógica difusa basado en el archivo
-        resultFZD = evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd);
+        resultFZD = evalfis([sensor_val(1), sensor_val(3), sensor_val(5), ...
+            sensor_val(2), sensor_val(4)],fzd);
         
         % Basado en el resultado de la lógica difusa, realiza la siguiente
         % toma de decisión y envía el comando a tráves del puerto serie.
         switch true
             % Resultado: Giro a la izquierda.
-            case resultFZD >= 0 && resultFZD < 1
+            case resultFZD >= -80 && resultFZD < -45
                 fprintf(s, '%c', 'L');
                 set(handles.Fuzzy_out,'String','Izquierda');
-                disp("Izquierda" + newline + sensorLect + num2str(betarad));
+                disp("Izquierda" + newline + sensorLect + ... 
+                    num2str(betarad) + 'logica:' + num2str(resultFZD));
                 phi = phi + alpha_t;
             % Resultado: Avanza
-            case resultFZD >= 1 && resultFZD < 2
-                fprintf(s, '%c', 'F');
+            case resultFZD >= -15 && resultFZD < 15
+                fprintf(s, '%c', 'H');
                 set(handles.Fuzzy_out,'String','Adelante');
-                disp("Adelante" + newline + sensorLect + num2str(betarad));
+                disp("Adelante" + newline + sensorLect + ...
+                    num2str(betarad) + 'logica:' + num2str(resultFZD));
                 % Realiza los cálculos de la ubicación de los objetos.
                 ci(1) = ci(1) + A*cos(phi);
                 ci(2) = ci(2) + A*sin(phi);
@@ -259,18 +262,20 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
                 % Incrementa el contador.
                 cont = cont + 1;
             % Resultado: Giro a la derecha
-            case resultFZD >= 2 && resultFZD < 3
+            case resultFZD > 45 && resultFZD <= 80
                 fprintf(s, '%c', 'R');
                 set(handles.Fuzzy_out,'String','Derecha')
-                disp("Derecha" + newline + sensorLect + num2str(betarad));
+                disp("Derecha" + newline + sensorLect + ... 
+                    num2str(betarad) + 'logica:' + num2str(resultFZD));
                 phi = phi - alpha_t;
             % Resultado: Caminata lenta (Wave gait).
             otherwise
-                fprintf(s, '%c', 'H');
-                set(handles.Fuzzy_out,'String','Wave')
-                disp("Por defecto" + newline + sensorLect + num2str(betarad));
+                fprintf(s, '%c', 'J');
+                set(handles.Fuzzy_out,'String','Default')
+                disp("Por defecto" + newline + sensorLect + ...
+                    num2str(betarad) + 'logica:' + num2str(resultFZD));
         end
-        pause(1);
+        pause(4);
     end
     % Actualiza el gráfico.
     axes(handles.graf_arana)
