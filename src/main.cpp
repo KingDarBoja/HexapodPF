@@ -43,6 +43,8 @@ extern void ForwardWaveGait();
 bool awake = false;
 double result;
 
+// unsigned long init_time, end_time, elapsed;
+
 // Declare string variables for the ultrasonic measures.
 String stringFX = "0", stringLD = "0", stringRD = "0", stringLX = "0", stringRX = "0";
 String msg = "0:0:0:0:0:0:0"; // string to be sent, default.
@@ -153,6 +155,12 @@ void setup() {
   pinMode(EP_LX , INPUT);
   pinMode(EP_RX , INPUT);
   //*/
+  if (awake == false) {
+    WakeUp();
+    Parche();
+    awake = true;
+  }
+  delay(3000);
 }
 
 // put your main code here, to run repeatedly:
@@ -193,19 +201,14 @@ void loop() {
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
   Serial.println(msg);
   //*/
-
-  delay(200);
+  Serial.flush();
+  delay(1000);
   //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
   // and the board will execute a movement based on that char.
-  if (awake == false) {
-    WakeUp();
-    Parche();
-    awake = true;
-  }
-  if (Serial.available()>0)
+  if (Serial.available())
   {
     char movCase = Serial.read();
     switch(movCase)

@@ -154,12 +154,12 @@ set(s,'Parity','none');
 
 % Conecta el objeto al dispositivo y muestra su estado
 fopen(s);
+pause(5)
 if strcmp(s.Status,'open')
     disp('Conexión exitosa al puerto especificado.')
 else
     disp('Conexión fallida al puerto especificado.')
 end
-pause(4);
 % Coordenadas finales (meta).
 cf = [str2double(get(handles.cfx,'String')), ...
     str2double(get(handles.cfy,'String'))];
@@ -200,7 +200,7 @@ fzd = readfis('fuzzy_logic_new_ruleset.fis');
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
-while (diff_coordx > err_perm || diff_coordy > err_perm ...
+while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         && checkbox1Value == 0)
     
     % Actualiza las coordenadas en base a los nuevos valores.
@@ -214,10 +214,13 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     
     % Obtiene las lecturas del puerto serie sin el terminador.
     sensorLect = fgetl(s);
-    
+    disp(sensorLect);
     % Verificamos si los primeros 3 caracteres son los necesarios para
     % ejecutar la lógica difusa, en este caso, MSG.
+    try
     if (strcmp(extractBefore(sensorLect,4),'MSG'))
+        % Incrementa el contador. 
+        cont = cont + 1;
         % Separa la cadena de caracteres y los guarda en una celda para
         % luego ser convertidos en un arreglo de tipo 'double'.
         dirSL = strsplit(sensorLect,':');
@@ -236,14 +239,14 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
                 fprintf(s, 'L');
                 set(handles.Fuzzy_out,'String','Izquierda');
                 disp("Izquierda" + newline + sensorLect + ... 
-                    num2str(betarad) + 'logica:' + num2str(resultFZD));
+                    num2str(betarad) + ' - logica:' + num2str(resultFZD));
                 phi = phi + alpha_t;
             % Resultado: Avanza
             case resultFZD >= -15 && resultFZD < 15
                 fprintf(s, 'F');
                 set(handles.Fuzzy_out,'String','Adelante');
                 disp("Adelante" + newline + sensorLect + ...
-                    num2str(betarad) + 'logica:' + num2str(resultFZD));
+                    num2str(betarad) + ' - logica:' + num2str(resultFZD));
                 % Computa el avance realizado.
                 ci(1) = floor(ci(1) + A*cos(phi));
                 ci(2) = floor(ci(2) + A*sin(phi));
@@ -254,76 +257,77 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
                 fprintf(s, 'R');
                 set(handles.Fuzzy_out,'String','Derecha')
                 disp("Derecha" + newline + sensorLect + ... 
-                    num2str(betarad) + 'logica:' + num2str(resultFZD));
+                    num2str(betarad) + ' - logica:' + num2str(resultFZD));
                 phi = phi - alpha_t;
             % Resultado: Caminata lenta (Wave gait).
             otherwise
                 fprintf(s, 'J');
                 set(handles.Fuzzy_out,'String','Default')
                 disp("Por defecto" + newline + sensorLect + ...
-                    num2str(betarad) + 'logica:' + num2str(resultFZD));
+                    num2str(betarad) + ' - logica:' + num2str(resultFZD));
         end
+        pause(5)
         % Realiza los cálculos de la ubicación de los objetos.
         phimat(cont) = radtodeg(phi);
         mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
         mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
         mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
-        mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);       
-        pause(4);
-    % Actualiza el gráfico.
-    axes(handles.graf_arana)
-    p1 = plot(mapRx,mapRy,'o');
-    set(p1,'Color','red');
-    hold on
-    p2 = plot(mapLx,mapLy,'o');
-    set(p2,'Color','blue');
-    p3 = plot(ci(1),ci(2),'+');
-    set(p3,'Color','green');
-    title('Mapa');
-    hold off
-    
-    axes(handles.graf_arana)
-    plot(coordx,coordy)
-    title('Recorrido')
-    
-    axes(handles.graf_phi)
-    plot(phimat)
-    title('Ángulo Araña')
-    
-    axes(handles.graf_beta)
-    plot(betamat)
-    title('Ángulo Destino')
-    
-    set(handles.Salida_sensores,'String', ...
-        num2cell(reshape(sensor_val(1:5),5,1)))
-    txtcix=num2str(coordx(end));
-    txtciy=num2str(coordy(end));
-    txtphi=num2str(phimat(end));
-    txtbet=num2str(betamat(end));
-    info = {txtphi;'' ; txtbet;'' ; txtcix;'' ; txtciy;};
-    set(handles.inst_info,'String',info)
-    
+        mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);
+        % Actualiza el gráfico.
+        axes(handles.graf_arana)
+        p1 = plot(mapRx,mapRy,'o');
+        set(p1,'Color','red');
+        hold on
+        p2 = plot(mapLx,mapLy,'o');
+        set(p2,'Color','blue');
+        p3 = plot(ci(1),ci(2),'+');
+        set(p3,'Color','green');
+        title('Mapa');
+        hold off
 
-    axes(handles.graf_polar)
-    phimat_r = rad2deg(phimat);
-    hex_m = sqrt(coordx.^2 + coordy.^2);
-    hex_p = atan2(coordy,coordx);
+        axes(handles.graf_arana)
+        plot(coordx,coordy)
+        title('Recorrido')
 
-    ang = 0 : .01 : 2 * pi;
-    lenghex = size(hex_m);   
-    f_ang = hex_m(1,lenghex(2)) .* ones(size(ang));
-    h3a = polar(hex_p,hex_m);
-    set(h3a,'color','b','linewidth',2)
-    hold on
-    h3b = polar(phimat_r, hex_m);
-    set(h3b,'color','r','linewidth',2)
-    h3c = polar(ang, f_ang);
-    set(h3c,'color','k','linewidth',2,'LineStyle','--')
-    hold off
+        axes(handles.graf_phi)
+        plot(phimat)
+        title('Ángulo Araña')
 
-    drawnow
-    % Incrementa el contador. 
-    cont = cont + 1;
+        axes(handles.graf_beta)
+        plot(betamat)
+        title('Ángulo Destino')
+
+        set(handles.Salida_sensores,'String', ...
+            num2cell(reshape(sensor_val(1:5),5,1)))
+        txtcix=num2str(coordx(end));
+        txtciy=num2str(coordy(end));
+        txtphi=num2str(phimat(end));
+        txtbet=num2str(betamat(end));
+        info = {txtphi;'' ; txtbet;'' ; txtcix;'' ; txtciy;};
+        set(handles.inst_info,'String',info)
+
+
+        axes(handles.graf_polar)
+        phimat_r = phimat;
+        hex_m = sqrt(coordx.^2 + coordy.^2);
+        hex_p = atan2(coordy,coordx);
+
+        ang = 0 : .01 : 2 * pi;
+        lenghex = size(hex_m);   
+        f_ang = hex_m(1,lenghex(2)) .* ones(size(ang));
+        h3a = polar(hex_p,hex_m);
+        set(h3a,'color','b','linewidth',2)
+        hold on
+        h3b = polar(phimat_r, hex_m);
+        set(h3b,'color','r','linewidth',2)
+        h3c = polar(ang, f_ang);
+        set(h3c,'color','k','linewidth',2,'LineStyle','--')
+        hold off
+
+        drawnow
+    end
+    catch
+        warning('No se pudo sincronizar con el mensaje.');
     end
     
     % Obtiene el valor del checkbox
