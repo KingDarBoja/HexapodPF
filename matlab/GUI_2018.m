@@ -130,15 +130,18 @@ function Iniciar_Callback(hObject, eventdata, handles)
 % Limpia la consola
 clc;
 % Elimina cualquier puerto abierto
-delete(instrfindall);
+if ~isempty(instrfind)
+    fclose(instrfind);
+    delete(instrfind);
+end
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
     s = serial('/dev/tty.usbmodem1431');
 elseif isunix
-    s = serial('/dev/tty.*');
+    s = serial('/dev/tty.usbmodem1431');
 elseif ispc
-    s = serial('COM*');
+    s = serial('COM8');
 else
     disp('Platforma no soportada');
 end
@@ -156,7 +159,7 @@ if strcmp(s.Status,'open')
 else
     disp('Conexión fallida al puerto especificado.')
 end
-pause(2);
+pause(4);
 % Coordenadas finales (meta).
 cf = [str2double(get(handles.cfx,'String')), ...
     str2double(get(handles.cfy,'String'))];
@@ -166,7 +169,7 @@ ci = [str2double(get(handles.cix,'String')), ...
 % Ángulo inicial del robot.
 phi = pi/2;
 % Desplazamiento por avance en cm.
-A = 1;
+A = 8;
 % Ángulo de giro por movimiento de giro izquierda / derecha.
 alpha_t = degtorad(45);
 % Umbral de error permitido en cm.
@@ -190,7 +193,6 @@ mapLx(cont) = 0;
 mapLy(cont) = 0;
 phimat = radtodeg(phi);
 betamat(cont) = 0;
-sensor_val = zeros(1,6);
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
@@ -200,14 +202,6 @@ fzd = readfis('fuzzy_logic_new_ruleset.fis');
 % programa utilizando el estado del checkbox.
 while (diff_coordx > err_perm || diff_coordy > err_perm ...
         && checkbox1Value == 0)
-    
-    % Obtiene el valor del checkbox
-    checkbox1Value = get(handles.checkbox1, 'value');
-    if ~checkbox1Value
-        set(handles.text11,'String', 'Ejecutandosé');
-    else
-        set(handles.text11,'String', 'Detenido');
-    end
     
     % Actualiza las coordenadas en base a los nuevos valores.
     diff_coordx = abs(cf(1)-ci(1));
@@ -239,54 +233,54 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
         switch true
             % Resultado: Giro a la izquierda.
             case resultFZD >= -80 && resultFZD < -45
-                fprintf(s, '%c', 'L');
+                fprintf(s, 'L');
                 set(handles.Fuzzy_out,'String','Izquierda');
                 disp("Izquierda" + newline + sensorLect + ... 
                     num2str(betarad) + 'logica:' + num2str(resultFZD));
                 phi = phi + alpha_t;
             % Resultado: Avanza
             case resultFZD >= -15 && resultFZD < 15
-                fprintf(s, '%c', 'H');
+                fprintf(s, 'F');
                 set(handles.Fuzzy_out,'String','Adelante');
                 disp("Adelante" + newline + sensorLect + ...
                     num2str(betarad) + 'logica:' + num2str(resultFZD));
-                % Realiza los cálculos de la ubicación de los objetos.
-                ci(1) = ci(1) + A*cos(phi);
-                ci(2) = ci(2) + A*sin(phi);
+                % Computa el avance realizado.
+                ci(1) = floor(ci(1) + A*cos(phi));
+                ci(2) = floor(ci(2) + A*sin(phi));
                 coordx(cont) = ci(1);
                 coordy(cont) = ci(2);
-                mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
-                mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
-                mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
-                mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);
-                % Incrementa el contador.
-                cont = cont + 1;
             % Resultado: Giro a la derecha
             case resultFZD > 45 && resultFZD <= 80
-                fprintf(s, '%c', 'R');
+                fprintf(s, 'R');
                 set(handles.Fuzzy_out,'String','Derecha')
                 disp("Derecha" + newline + sensorLect + ... 
                     num2str(betarad) + 'logica:' + num2str(resultFZD));
                 phi = phi - alpha_t;
             % Resultado: Caminata lenta (Wave gait).
             otherwise
-                fprintf(s, '%c', 'J');
+                fprintf(s, 'J');
                 set(handles.Fuzzy_out,'String','Default')
                 disp("Por defecto" + newline + sensorLect + ...
                     num2str(betarad) + 'logica:' + num2str(resultFZD));
         end
+        % Realiza los cálculos de la ubicación de los objetos.
+        phimat(cont) = radtodeg(phi);
+        mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
+        mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
+        mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
+        mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);       
         pause(4);
-    end
     % Actualiza el gráfico.
     axes(handles.graf_arana)
-    p1=plot(mapRx,mapRy,'o');
-    set(p1,'Color','red')
+    p1 = plot(mapRx,mapRy,'o');
+    set(p1,'Color','red');
     hold on
-    p2=plot(mapLx,mapLy,'o');
-    set(p2,'Color','blue')
-    p3=plot(ci(1),ci(2));
-    set(p3,'Color','green')
-    title('Mapa')
+    p2 = plot(mapLx,mapLy,'o');
+    set(p2,'Color','blue');
+    p3 = plot(ci(1),ci(2),'+');
+    set(p3,'Color','green');
+    title('Mapa');
+    hold off
     
     axes(handles.graf_arana)
     plot(coordx,coordy)
@@ -309,11 +303,11 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     info = {txtphi;'' ; txtbet;'' ; txtcix;'' ; txtciy;};
     set(handles.inst_info,'String',info)
     
-    
-    axes(handles.polar)
-    phimat_r = degtorad(phimat);
-    hex_m = sqrt(coordx(end).^2 + coordy(end).^2);
-    hex_p = atan2(coordy(end),coordx(end));
+
+    axes(handles.graf_polar)
+    phimat_r = rad2deg(phimat);
+    hex_m = sqrt(coordx.^2 + coordy.^2);
+    hex_p = atan2(coordy,coordx);
 
     ang = 0 : .01 : 2 * pi;
     lenghex = size(hex_m);   
@@ -328,14 +322,23 @@ while (diff_coordx > err_perm || diff_coordy > err_perm ...
     hold off
 
     drawnow
+    % Incrementa el contador. 
+    cont = cont + 1;
+    end
+    
+    % Obtiene el valor del checkbox
+    checkbox1Value = get(handles.checkbox1, 'value');
+    if ~checkbox1Value
+        set(handles.text11,'String', 'Ejecutandosé');
+    else
+        set(handles.text11,'String', 'Detenido');
+    end
 end
 % Elimina de la memoria y del espacio de trabajo el objeto de puerto serie
 % 's' con el fin de dejar libre dicho puerto.
 fclose(s);
 delete(s)
 clear s
-
-
 
 function cix_Callback(hObject, eventdata, handles)
 % hObject    handle to cix (see GCBO)
