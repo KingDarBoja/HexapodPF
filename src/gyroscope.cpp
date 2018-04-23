@@ -67,14 +67,16 @@ void gyroMeasureSetting()
     TWBR = ((F_CPU / 400000) - 16) / 2; // Set I2C frequency to 400kHz
   #endif
   sensor.initialize();        // Initialize sensor
-  //sensor.setRate(7);
-  //sensor.setExternalFrameSync(0);
-  //sensor.setDLPFMode(0);
+  sensor.setRate(7);
+  sensor.setExternalFrameSync(0);
+  sensor.setDLPFMode(0);
+
   if (sensor.testConnection()) {
-    Serial.println("MPU6050 ready!");
+    Serial1.println("MPU6050 ready!");
   } else {
-    Serial.println("Error al iniciar el sensor");
+    Serial1.println("Error al iniciar el sensor");
   }
+
   delay(100);
 
   // Raw data readings
@@ -100,7 +102,7 @@ void gyroMeasureSetting()
   timer = micros();
 }
 
-void gyroMeasureLoop()
+double gyroMeasureLoop()
 {
   // Raw data readings
   sensor.getAcceleration(&ax, &ay, &az);
@@ -163,6 +165,8 @@ void gyroMeasureLoop()
     gyroYangle = kalAngleY;
   }
 
+  // Print Data
+  #if 0 // Set to 1 to print raw values
   float ax_m_s2 = ax * (9.81/A_R);
   float ay_m_s2 = ay * (9.81/A_R);
   float az_m_s2 = az * (9.81/A_R);
@@ -170,8 +174,6 @@ void gyroMeasureLoop()
   float gy_deg_s = gy * (250.0/32768.0);
   float gz_deg_s = gz * (250.0/32768.0);
 
-  // Print Data
-  #if 1 // Set to 1 to print raw values
   Serial.print(ax_m_s2); Serial.print("\t");
   Serial.print(ay_m_s2); Serial.print("\t");
   Serial.print(az_m_s2); Serial.print("\t");
@@ -183,6 +185,7 @@ void gyroMeasureLoop()
   Serial.print("\t");
   #endif
 
+  /*
   Serial.print(roll); Serial.print("\t");
   Serial.print(gyroXangle); Serial.print("\t");
   Serial.print(kalAngleX); Serial.print("\t");
@@ -192,6 +195,8 @@ void gyroMeasureLoop()
   Serial.print(kalAngleY); Serial.print("\t");
   Serial.print("\r\n");
   delay(2);
+  //*/
+  return kalAngleY;
 }
 
 /**
