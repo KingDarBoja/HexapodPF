@@ -258,6 +258,13 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                     disp("Derecha" + newline + sensorLect + ... 
                         num2str(betarad) + ' - logica:' + num2str(resultFZD));
                     phi = phi - alpha_t;
+                case resultFZD >= 2.5 && resultFZD < 3.5
+                    fprintf(s, 'B');
+                    set(handles.Fuzzy_out,'String','Derecha')
+                    disp("Giro 180°" + newline + sensorLect + ... 
+                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
+                    phi = phi - degtorad(180);
+                    pause(2)
                 % Resultado: Caminata lenta (Wave gait).
                 otherwise
                     fprintf(s, 'J');
