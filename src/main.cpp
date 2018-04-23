@@ -38,10 +38,13 @@ extern void TurnLeftSoft();
 extern void ForwardTripodGait();
 extern void PitchWalking();
 extern void ForwardWaveGait();
+extern void TurnBack();
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
 double result;
+
+// unsigned long init_time, end_time, elapsed;
 
 // Declare string variables for the ultrasonic measures.
 String stringFX = "0", stringLD = "0", stringRD = "0", stringLX = "0", stringRX = "0";
@@ -117,7 +120,7 @@ void setup() {
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
-  // servoAttachment();
+  servoAttachment();
 
   /*
   // ======================= GYROSCOPE CALIBRATION =======================
@@ -153,6 +156,12 @@ void setup() {
   pinMode(EP_LX , INPUT);
   pinMode(EP_RX , INPUT);
   //*/
+  if (awake == false) {
+    WakeUp();
+    Parche();
+    awake = true;
+  }
+  delay(3000);
 }
 
 // put your main code here, to run repeatedly:
@@ -190,48 +199,47 @@ void loop() {
   stringLX =  String(limitValue(cm_LX));
 
   // Message string to be send
-  msg = "MSG:" + stringFX + ":" + stringRD + ":" + stringLD + ":" + stringRX + ":" + stringLX + ":" + String(result);
+  msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
   Serial.println(msg);
   //*/
-
-  delay(200);
-  /*
+  Serial.flush();
+  delay(1000);
+  //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
   // and the board will execute a movement based on that char.
-  if (awake == false) {
-    WakeUp();
-    Parche();
-    awake = true;
-  }
-  if (Serial.available()>0)
+  if (Serial.available())
   {
     char movCase = Serial.read();
     switch(movCase)
     {
       case 'F':
-        Serial.println("Adelante Tripod");
+        //Serial.println("Adelante Tripod");
         ForwardTripodGait();
         break;
       case 'L':
-        Serial.println("Izquierda");
+        //Serial.println("Izquierda");
         TurnLeftSoft();
         break;
       case 'R':
-        Serial.println("Derecha");
+        //Serial.println("Derecha");
         TurnRightSoft();
         break;
       case 'G':
-        Serial.println("Inclinado hacia arriba");
+        //Serial.println("Inclinado hacia arriba");
         PitchWalking();
         break;
       case 'H':
-        Serial.println("Adelante Wave");
+        //Serial.println("Adelante Wave");
         ForwardWaveGait();
         break;
+      case 'B':
+        //Serial.println("Giro 180°");
+        TurnBack();
+        break;
       default:
-        Serial.println("Default");
+        //Serial.println("Default");
         Parche();
         break;
     }

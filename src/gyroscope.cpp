@@ -69,7 +69,7 @@ void gyroMeasureSetting()
   sensor.initialize();        // Initialize sensor
   sensor.setRate(7);
   sensor.setExternalFrameSync(0);
-  sensor.setDLPFMode(0);
+  sensor.setDLPFMode(6);
 
   if (sensor.testConnection()) {
     Serial1.println("MPU6050 ready!");
