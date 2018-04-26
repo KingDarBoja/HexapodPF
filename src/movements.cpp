@@ -192,7 +192,7 @@ void Parche() {
 // Set the elevation angle for some movements (ForwardTripodGait)
 int elev_angle = 60;
 // Set the turning angle for some movements (TurnRightSoft, TurnLeftSoft)
-int turn_angle_s = 45;
+int turn_angle_s = 42;
 
 void TurnRightSoft() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,

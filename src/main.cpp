@@ -115,7 +115,7 @@ int limitValue(int mvalue)
 // Setup code to run once.
 void setup() {
   // Start the communication at the serial ports.
-  Serial1.begin(115200);
+  Serial1.begin(9600);
   Serial.begin(115200);
 
   // Pin assigment of every servo of the hexapod.
@@ -200,18 +200,18 @@ void loop() {
 
   // Message string to be send
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial.println(msg);
+  Serial1.println(msg);
   //*/
-  Serial.flush();
+
   delay(1000);
   //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
   // and the board will execute a movement based on that char.
-  if (Serial.available())
+  if (Serial1.available())
   {
-    char movCase = Serial.read();
+    char movCase = Serial1.read();
     switch(movCase)
     {
       case 'F':

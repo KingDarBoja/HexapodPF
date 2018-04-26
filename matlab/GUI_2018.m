@@ -141,7 +141,7 @@ if ismac
 elseif isunix
     s = serial('/dev/tty.usbmodem1431');
 elseif ispc
-    s = serial('COM8');
+    s = serial('COM1');
 else
     disp('Platforma no soportada');
 end
