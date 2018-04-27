@@ -33,12 +33,14 @@ extern void gyroCalibrationSetting();
 extern void servoAttachment();
 extern void WakeUp();
 extern void Parche();
-extern void TurnRightSoft();
-extern void TurnLeftSoft();
+extern void TurnRightSoft(double var_angle);
+extern void TurnLeftSoft(double var_angle);
 extern void ForwardTripodGait();
 extern void PitchWalking();
 extern void ForwardWaveGait();
-extern void TurnBack();
+
+// Calculate based on max input size expected for one command
+#define INPUT_SIZE 8
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
@@ -200,7 +202,7 @@ void loop() {
 
   // Message string to be send
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial1.println(msg);
+  Serial.println(msg);
   //*/
 
   delay(1000);
@@ -209,40 +211,33 @@ void loop() {
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
   // and the board will execute a movement based on that char.
-  if (Serial1.available())
+
+  // Get next command from Serial (add 1 for final 0)
+  char input[INPUT_SIZE + 1];
+  byte size = Serial.readBytes(input, INPUT_SIZE);
+  // Add the final 0 to end the C string
+  input[size] = 0;
+
+  // Read each command pair
+  char* separator = strchr(input, '&');
+  if (separator != 0)
   {
-    char movCase = Serial1.read();
-    switch(movCase)
-    {
-      case 'F':
-        //Serial.println("Adelante Tripod");
-        ForwardTripodGait();
-        break;
-      case 'L':
-        //Serial.println("Izquierda");
-        TurnLeftSoft();
-        break;
-      case 'R':
-        //Serial.println("Derecha");
-        TurnRightSoft();
-        break;
-      case 'G':
-        //Serial.println("Inclinado hacia arriba");
-        PitchWalking();
-        break;
-      case 'H':
-        //Serial.println("Adelante Wave");
-        ForwardWaveGait();
-        break;
-      case 'B':
-        //Serial.println("Giro 180°");
-        TurnBack();
-        break;
-      default:
-        //Serial.println("Default");
-        Parche();
-        break;
+    // Actually split the string in 2: replace ':' with 0
+    *separator = 0;
+    ++separator;
+    double position = atof(separator);
+    Serial.println(position);
+    // Do something with servoId and position
+    if (position <= 15.00 && position >= -15.00) {
+      ForwardTripodGait();
+    } else if (position < -15.00 && position >= -60.00) {
+      TurnLeftSoft(abs(position));
+    } else if (position > 15.00 && position <= 60.00) {
+      TurnRightSoft(abs(position));
+    } else {
+      Parche();
     }
   }
+
   //*/
 }
