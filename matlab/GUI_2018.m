@@ -141,7 +141,7 @@ if ismac
 elseif isunix
     s = serial('/dev/tty.usbmodem1431');
 elseif ispc
-    s = serial('COM1');
+    s = serial('COM3');
 else
     disp('Platforma no soportada');
 end
@@ -149,12 +149,12 @@ end
 % Configuración de las propiedades del objeto 's'.
 set(s,'DataBits',8);
 set(s,'StopBits',1);
-set(s,'BaudRate',115200);
+set(s,'BaudRate',9600);
 set(s,'Parity','none');
+set(s,'Terminator','LF');
 
 % Conecta el objeto al dispositivo y muestra su estado
 fopen(s);
-pause(5)
 if strcmp(s.Status,'open')
     disp('Conexión exitosa al puerto especificado.')
 else
@@ -170,8 +170,6 @@ ci = [str2double(get(handles.cix,'String')), ...
 phi = pi/2;
 % Desplazamiento por avance en cm.
 A = 8;
-% Ángulo de giro por movimiento de giro izquierda / derecha.
-alpha_t = degtorad(45);
 % Umbral de error permitido en cm.
 err_perm = 10;
 
@@ -180,8 +178,8 @@ cont = 1;
 
 % Obtiene el estado del widget 'checkbox1'
 checkbox1Value = get(handles.checkbox1, 'value');
-diff_coordx = abs(cf(1)-ci(1));
-diff_coordy = abs(cf(2)-ci(2));
+diff_coordx = cf(1)-ci(1);
+diff_coordy = cf(2)-ci(2);
 
 % Inizializa las variables que corresponden a las coordenadas del robot y
 % los obstaculos para dibujarlos en el mapa.
@@ -196,25 +194,36 @@ betamat(cont) = 0;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v2.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_v3.fis');
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
 while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         && checkbox1Value == 0)
     
+    % Limpia el buffer de entrada del puerto serial.
+    flushinput(s);
+    
     % Actualiza las coordenadas en base a los nuevos valores.
-    diff_coordx = abs(cf(1)-ci(1));
-    diff_coordy = abs(cf(2)-ci(2));
+    diff_coordx = cf(1)-ci(1);
+    diff_coordy = cf(2)-ci(2);
     
     % Ángulo entre el origen y el destino utilizando la función atan2 en el
     % intervalo [-pi, pi]
     delta = atan2(diff_coordy, diff_coordx);
     betarad = radtodeg(delta) - radtodeg(phi);
+    if (betarad > 180)
+        betarad = betarad - 360;
+    else
+        if (betarad < -180)
+            betarad = betarad + 360;
+        end
+    end
     
     % Obtiene las lecturas del puerto serie sin el terminador.
-    sensorLect = fgetl(s);
-    
+    flushinput(s);
+    sensorLect = fscanf(s,'%s',30);
+    disp(sensorLect);
     % Verificamos si los primeros 3 caracteres son los necesarios para
     % ejecutar la lógica difusa, en este caso, MSG.
     try
@@ -228,53 +237,57 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             sensor_val(sensor_val > 100) = 100;
 
             % Ejecuta la lógica difusa basado en el archivo
-            resultFZD = evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd);
-
+            resultFZD = round(evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd));
+            disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
             % Basado en el resultado de la lógica difusa, realiza la siguiente
             % toma de decisión y envía el comando a tráves del puerto serie.
-            switch true
-                % Resultado: Giro a la izquierda.
-                case resultFZD >= -1 && resultFZD < 0.5
-                    fprintf(s, 'L');
-                    set(handles.Fuzzy_out,'String','Izquierda');
-                    disp("Izquierda" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi + alpha_t;
-                % Resultado: Avanza
-                case resultFZD >= 0.5 && resultFZD < 1.5
-                    fprintf(s, 'F');
-                    set(handles.Fuzzy_out,'String','Adelante');
-                    disp("Adelante" + newline + sensorLect + ...
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    % Computa el avance realizado.
-                    ci(1) = floor(ci(1) + A*cos(phi));
-                    ci(2) = floor(ci(2) + A*sin(phi));
-                    coordx(cont) = ci(1);
-                    coordy(cont) = ci(2);
-                % Resultado: Giro a la derecha
-                case resultFZD >= 1.5 && resultFZD < 2.5
-                    fprintf(s, 'R');
-                    set(handles.Fuzzy_out,'String','Derecha')
-                    disp("Derecha" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi - alpha_t;
-                case resultFZD >= 2.5 && resultFZD < 3.5
-                    fprintf(s, 'B');
-                    set(handles.Fuzzy_out,'String','Derecha')
-                    disp("Giro 180°" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi - degtorad(180);
-                    pause(2)
-                % Resultado: Caminata lenta (Wave gait).
-                otherwise
-                    fprintf(s, 'J');
-                    set(handles.Fuzzy_out,'String','Default')
-                    disp("Por defecto" + newline + sensorLect + ...
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
+            n_total = round(2.5 * resultFZD);
+            if resultFZD < 5 || resultFZD > -5
+                fprintf(s,sprintf('%s&%.f','REV', n_total));
+                ci(1) = floor(ci(1) + A*cos(phi));
+                ci(2) = floor(ci(2) + A*sin(phi));
+                coordx(cont) = ci(1);
+                coordy(cont) = ci(2);
+                pause(4);
+            else
+                n_total = round(2.5 * resultFZD);
+                while n_total ~= 0
+                    if n_total > 60
+                        for i=1:fix(n_total/60)
+                            n_total = n_total - 60;
+                            phi = phi + deg2rad(24);
+                            fprintf(s,sprintf('%s&%.f','REV',60));
+                            pause(3);
+                        end        
+                    else
+                        if n_total > 0 && n_total <= 60
+                            phi = phi + deg2rad(n_total/2.5);
+                            fprintf(s,sprintf('%s&%.f','REV', n_total));
+                            n_total = n_total - n_total;
+                            pause(3);
+                        else
+                            if n_total < -60
+                                for i=-1:-1:fix(n_total/60)
+                                    n_total = n_total + 60;
+                                    phi = phi - deg2rad(24);
+                                    fprintf(s,sprintf('%s&%.f','REV',-60));
+                                    pause(3);
+                                end
+                            else
+                                if n_total >= -60 && n_total < 0
+                                    phi = phi + deg2rad(n_total/2.5);
+                                    fprintf(s,sprintf('%s&%.f','REV', n_total));
+                                    n_total = n_total - n_total;                            
+                                    pause(3);
+                                end
+                            end
+                        end
+                    end
+                end
             end
-            pause(5.1)
             % Realiza los cálculos de la ubicación de los objetos.
             phimat(cont) = radtodeg(phi);
+            betamat(cont) = radtodeg(delta);
             mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
             mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
             mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
@@ -312,7 +325,6 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             set(handles.inst_info,'String',info)
 
             axes(handles.graf_polar)
-            phimat_r = phimat;
             hex_m = sqrt(coordx.^2 + coordy.^2);
             hex_p = atan2(coordy,coordx);
 
@@ -322,7 +334,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             h3a = polar(hex_p,hex_m);
             set(h3a,'color','b','linewidth',2)
             hold on
-            h3b = polar(phimat_r, hex_m);
+            h3b = polar(deg2rad(phimat), hex_m);
             set(h3b,'color','r','linewidth',2)
             h3c = polar(ang, f_ang);
             set(h3c,'color','k','linewidth',2,'LineStyle','--')

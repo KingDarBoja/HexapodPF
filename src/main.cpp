@@ -202,7 +202,7 @@ void loop() {
 
   // Message string to be send
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial.println(msg);
+  Serial1.println(msg);
   //*/
 
   delay(1000);
@@ -214,7 +214,7 @@ void loop() {
 
   // Get next command from Serial (add 1 for final 0)
   char input[INPUT_SIZE + 1];
-  byte size = Serial.readBytes(input, INPUT_SIZE);
+  byte size = Serial1.readBytes(input, INPUT_SIZE);
   // Add the final 0 to end the C string
   input[size] = 0;
 
@@ -226,14 +226,14 @@ void loop() {
     *separator = 0;
     ++separator;
     double position = atof(separator);
-    Serial.println(position);
+    // Serial.println(position);
     // Do something with servoId and position
     if (position <= 15.00 && position >= -15.00) {
       ForwardTripodGait();
     } else if (position < -15.00 && position >= -60.00) {
-      TurnLeftSoft(abs(position));
-    } else if (position > 15.00 && position <= 60.00) {
       TurnRightSoft(abs(position));
+    } else if (position > 15.00 && position <= 60.00) {
+      TurnLeftSoft(abs(position));
     } else {
       Parche();
     }
