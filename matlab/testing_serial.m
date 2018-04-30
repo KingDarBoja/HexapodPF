@@ -38,10 +38,10 @@ cont = 1;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v3.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_v4.fis');
 
-cf(1) = 40; ci(1) = 0;
-cf(2) = 40; ci(2) = 0;
+cf(1) = -100; ci(1) = 0;
+cf(2) = 100; ci(2) = 0;
 phi = pi/2;
 
 flushinput(s);

@@ -194,7 +194,7 @@ betamat(cont) = 0;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v3.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_v4.fis');
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
@@ -242,13 +242,13 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             % Basado en el resultado de la lógica difusa, realiza la siguiente
             % toma de decisión y envía el comando a tráves del puerto serie.
             n_total = round(2.5 * resultFZD);
-            if resultFZD < 5 || resultFZD > -5
+            if resultFZD <= 5 && resultFZD >= -5
                 fprintf(s,sprintf('%s&%.f','REV', n_total));
                 ci(1) = floor(ci(1) + A*cos(phi));
                 ci(2) = floor(ci(2) + A*sin(phi));
                 coordx(cont) = ci(1);
                 coordy(cont) = ci(2);
-                pause(4);
+%                 pause(3);
             else
                 n_total = round(2.5 * resultFZD);
                 while n_total ~= 0
@@ -257,7 +257,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                             n_total = n_total - 60;
                             phi = phi + deg2rad(24);
                             fprintf(s,sprintf('%s&%.f','REV',60));
-                            pause(3);
+%                             pause(3);
                         end        
                     else
                         if n_total > 0 && n_total <= 60
@@ -271,20 +271,21 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                                     n_total = n_total + 60;
                                     phi = phi - deg2rad(24);
                                     fprintf(s,sprintf('%s&%.f','REV',-60));
-                                    pause(3);
+%                                     pause(3);
                                 end
                             else
                                 if n_total >= -60 && n_total < 0
                                     phi = phi + deg2rad(n_total/2.5);
                                     fprintf(s,sprintf('%s&%.f','REV', n_total));
                                     n_total = n_total - n_total;                            
-                                    pause(3);
+%                                     pause(3);
                                 end
                             end
                         end
                     end
                 end
             end
+            pause(20);
             % Realiza los cálculos de la ubicación de los objetos.
             phimat(cont) = radtodeg(phi);
             betamat(cont) = radtodeg(delta);
@@ -301,7 +302,8 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             set(p2,'Color','blue');
             p3 = plot(ci(1),ci(2),'+');
             set(p3,'Color','green');
-            title('Mapa');        
+            title('Mapa');
+            hold off
 
             axes(handles.graf_arana)
             plot(coordx,coordy)
