@@ -211,7 +211,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
     % Ángulo entre el origen y el destino utilizando la función atan2 en el
     % intervalo [-pi, pi]
     delta = atan2(diff_coordy, diff_coordx);
-    betarad = radtodeg(delta) - radtodeg(phi);
+    betarad = round(radtodeg(delta)) - round(radtodeg(phi));
     if (betarad > 180)
         betarad = betarad - 360;
     else
@@ -248,7 +248,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                 ci(2) = floor(ci(2) + A*sin(phi));
                 coordx(cont) = ci(1);
                 coordy(cont) = ci(2);
-%                 pause(3);
+                pause(3);
             else
                 n_total = round(2.5 * resultFZD);
                 while n_total ~= 0
@@ -257,7 +257,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                             n_total = n_total - 60;
                             phi = phi + deg2rad(24);
                             fprintf(s,sprintf('%s&%.f','REV',60));
-%                             pause(3);
+                            pause(3);
                         end        
                     else
                         if n_total > 0 && n_total <= 60
@@ -271,21 +271,20 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                                     n_total = n_total + 60;
                                     phi = phi - deg2rad(24);
                                     fprintf(s,sprintf('%s&%.f','REV',-60));
-%                                     pause(3);
+                                    pause(3);
                                 end
                             else
                                 if n_total >= -60 && n_total < 0
                                     phi = phi + deg2rad(n_total/2.5);
                                     fprintf(s,sprintf('%s&%.f','REV', n_total));
                                     n_total = n_total - n_total;                            
-%                                     pause(3);
+                                    pause(3);
                                 end
                             end
                         end
                     end
                 end
             end
-            pause(20);
             % Realiza los cálculos de la ubicación de los objetos.
             phimat(cont) = radtodeg(phi);
             betamat(cont) = radtodeg(delta);

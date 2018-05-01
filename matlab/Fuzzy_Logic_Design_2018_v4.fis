@@ -5,10 +5,10 @@ Version=2.0
 NumInputs=7
 NumOutputs=1
 NumRules=23
-AndMethod='min'
+AndMethod='prod'
 OrMethod='max'
 ImpMethod='min'
-AggMethod='max'
+AggMethod='sum'
 DefuzzMethod='centroid'
 
 [Input1]
@@ -50,13 +50,13 @@ MF2='Far':'trapmf',[40 45 100 100]
 Name='diff'
 Range=[-180 180]
 NumMFs=7
-MF1='NS':'trimf',[-120 -60 0]
-MF2='zero':'trimf',[-60 0 60]
-MF3='PS':'trimf',[0 60 120]
-MF4='NB':'trimf',[-200 -180 -120]
-MF5='NM':'trimf',[-180 -120 -60]
-MF6='PM':'trimf',[60 120 180]
-MF7='PB':'trimf',[120 180 200]
+MF1='NS':'trimf',[-90 -45 0]
+MF2='zero':'trimf',[-45 0 45]
+MF3='PS':'trimf',[0 45 90]
+MF4='NB':'trapmf',[-200 -180 -150 -90]
+MF5='NM':'trimf',[-135 -90 -45]
+MF6='PM':'trimf',[45 90 135]
+MF7='PB':'trapmf',[90 135 180 200]
 
 [Input7]
 Name='slope_y'
@@ -71,12 +71,12 @@ Name='output1'
 Range=[-180 180]
 NumMFs=7
 MF1='L':'trimf',[45 90 135]
-MF2='F':'trimf',[-45 0 45]
+MF2='F':'trimf',[-20 0 20]
 MF3='R':'trimf',[-135 -90 -45]
 MF4='RF':'trimf',[-90 -45 0]
 MF5='LF':'trimf',[0 45 90]
 MF6='LB':'trapmf',[90 135 180 200]
-MF7='RB':'trapmf',[-200 -180 -135 -90]
+MF7='RB':'trapmf',[-200 -180 -150 -90]
 
 [Rules]
 0 1 2 0 0 0 0, 3 (1) : 1
@@ -85,7 +85,7 @@ MF7='RB':'trapmf',[-200 -180 -135 -90]
 0 0 0 1 0 0 0, 3 (1) : 1
 0 2 1 0 1 0 0, 1 (1) : 1
 0 1 2 1 0 0 0, 3 (1) : 1
-1 0 0 2 0 0 0, 1 (0) : 1
+1 0 0 2 0 0 0, 1 (1) : 1
 2 0 0 0 0 0 0, 2 (1) : 1
 2 0 0 1 1 0 0, 2 (1) : 1
 1 1 1 1 2 0 0, 3 (1) : 1
