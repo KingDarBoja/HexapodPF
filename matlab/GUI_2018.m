@@ -151,10 +151,13 @@ set(s,'DataBits',8);
 set(s,'StopBits',1);
 set(s,'BaudRate',9600);
 set(s,'Parity','none');
-set(s,'Terminator','LF');
+set(s,'Timeout',5.0);
+% set(s,'Terminator','LF');
+set(s, 'InputBufferSize', 30)
 
 % Conecta el objeto al dispositivo y muestra su estado
 fopen(s);
+pause(0.5);
 if strcmp(s.Status,'open')
     disp('Conexión exitosa al puerto especificado.')
 else
@@ -194,16 +197,17 @@ betamat(cont) = 0;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v4.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
+
+s.ReadAsyncMode = 'continuous';
+% s.ReadAsyncMode = 'manual';
+pause(0.5);
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
 while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         && checkbox1Value == 0)
-    
-    % Limpia el buffer de entrada del puerto serial.
-    flushinput(s);
-    
+    disp(cont);
     % Actualiza las coordenadas en base a los nuevos valores.
     diff_coordx = cf(1)-ci(1);
     diff_coordy = cf(2)-ci(2);
@@ -221,15 +225,20 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
     end
     
     % Obtiene las lecturas del puerto serie sin el terminador.
-    flushinput(s);
-    sensorLect = fscanf(s,'%s',30);
-    disp(sensorLect);
+    if s.bytesavailable < 18
+        fprintf('.');
+        pause(0.1);
+    else
+        % Limpia el buffer de entrada del puerto serial.
+        flushinput(s);
+        sensorLect = fscanf(s,'%s',30);
     % Verificamos si los primeros 3 caracteres son los necesarios para
     % ejecutar la lógica difusa, en este caso, MSG.
     try
         if (strcmp(extractBefore(sensorLect,4),'MSG'))
             % Incrementa el contador. 
             cont = cont + 1;
+            
             % Separa la cadena de caracteres y los guarda en una celda para
             % luego ser convertidos en un arreglo de tipo 'double'.
             dirSL = strsplit(sensorLect,':');
@@ -237,18 +246,17 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             sensor_val(sensor_val > 100) = 100;
 
             % Ejecuta la lógica difusa basado en el archivo
-            resultFZD = round(evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd));
+            resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
+                                       sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
             disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
             % Basado en el resultado de la lógica difusa, realiza la siguiente
             % toma de decisión y envía el comando a tráves del puerto serie.
             n_total = round(2.5 * resultFZD);
-            if resultFZD <= 5 && resultFZD >= -5
+            if resultFZD <= 15 && resultFZD >= -15
                 fprintf(s,sprintf('%s&%.f','REV', n_total));
                 ci(1) = floor(ci(1) + A*cos(phi));
                 ci(2) = floor(ci(2) + A*sin(phi));
-                coordx(cont) = ci(1);
-                coordy(cont) = ci(2);
-                pause(3);
+                pause(4);
             else
                 n_total = round(2.5 * resultFZD);
                 while n_total ~= 0
@@ -257,34 +265,36 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                             n_total = n_total - 60;
                             phi = phi + deg2rad(24);
                             fprintf(s,sprintf('%s&%.f','REV',60));
-                            pause(3);
+                            pause(4);
                         end        
                     else
                         if n_total > 0 && n_total <= 60
                             phi = phi + deg2rad(n_total/2.5);
                             fprintf(s,sprintf('%s&%.f','REV', n_total));
                             n_total = n_total - n_total;
-                            pause(3);
+                            pause(4);
                         else
                             if n_total < -60
                                 for i=-1:-1:fix(n_total/60)
                                     n_total = n_total + 60;
                                     phi = phi - deg2rad(24);
                                     fprintf(s,sprintf('%s&%.f','REV',-60));
-                                    pause(3);
+                                    pause(4);
                                 end
                             else
                                 if n_total >= -60 && n_total < 0
                                     phi = phi + deg2rad(n_total/2.5);
                                     fprintf(s,sprintf('%s&%.f','REV', n_total));
                                     n_total = n_total - n_total;                            
-                                    pause(3);
+                                    pause(4);
                                 end
                             end
                         end
                     end
                 end
             end
+            coordx(cont) = ci(1);
+            coordy(cont) = ci(2);
             % Realiza los cálculos de la ubicación de los objetos.
             phimat(cont) = radtodeg(phi);
             betamat(cont) = radtodeg(delta);
@@ -292,6 +302,7 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
             mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
             mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);
+            
             % Actualiza el gráfico.
             axes(handles.graf_arana)
             p1 = plot(mapRx,mapRy,'o');
@@ -341,9 +352,11 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             set(h3c,'color','k','linewidth',2,'LineStyle','--')
             hold off
             drawnow
+            pause(0.5);
         end
     catch
         disp('No se pudo sincronizar con el mensaje.');
+    end
     end
     
     % Obtiene el valor del checkbox

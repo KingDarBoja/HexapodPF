@@ -1,0 +1,107 @@
+[System]
+Name='Fuzzy_Logic_Design_2018_Augusto'
+Type='mamdani'
+Version=2.0
+NumInputs=7
+NumOutputs=1
+NumRules=32
+AndMethod='prod'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='sum'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='L'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input2]
+Name='LU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input3]
+Name='FU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input4]
+Name='RU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input5]
+Name='R'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input6]
+Name='diff'
+Range=[-180 180]
+NumMFs=3
+MF1='zero':'trimf',[-45 0 45]
+MF2='Menor':'trapmf',[-188 -183 -68.6457204767064 -0.293]
+MF3='Mayor':'trapmf',[0.7799349945829 68.2556879739978 178.219934994583 198.219934994583]
+
+[Input7]
+Name='slope_y'
+Range=[-180 180]
+NumMFs=3
+MF1='arriba':'trapmf',[20 40 180 200]
+MF2='plano':'trapmf',[-30 -20 20 30]
+MF3='abajo':'trapmf',[-200 -180 -40 -20]
+
+[Output1]
+Name='output1'
+Range=[-180 180]
+NumMFs=5
+MF1='F':'trimf',[-20 0 20]
+MF2='R':'trimf',[-90 -45 0]
+MF3='L':'trimf',[0 45 90]
+MF4='LH':'trapmf',[50 100 190 200]
+MF5='RH':'trapmf',[-200 -190 -105 -50]
+
+[Rules]
+1 2 2 2 0 3 2, 1 (1) : 1
+2 2 2 0 0 3 2, 3 (1) : 1
+2 0 1 0 0 3 2, 4 (1) : 1
+0 0 1 0 1 3 2, 4 (1) : 1
+0 1 0 0 1 3 2, 4 (1) : 1
+0 1 0 1 0 3 2, 4 (1) : 1
+1 0 0 1 0 3 2, 4 (1) : 1
+0 1 2 2 2 3 2, 2 (1) : 1
+1 0 1 2 2 3 2, 5 (1) : 1
+0 2 2 2 0 1 2, 1 (1) : 1
+2 2 2 1 0 1 2, 3 (1) : 1
+2 0 1 0 1 1 2, 4 (1) : 1
+2 1 0 1 0 1 2, 4 (1) : 1
+2 2 1 1 0 1 2, 4 (1) : 1
+0 1 2 2 2 1 2, 2 (1) : 1
+1 0 0 1 2 1 2, 5 (1) : 1
+1 0 1 0 2 1 2, 5 (1) : 1
+0 1 1 2 2 1 2, 5 (1) : 1
+1 0 0 1 1 1 2, -1 (1) : 1
+1 0 1 0 1 1 2, -1 (1) : 1
+1 1 0 0 1 1 2, -1 (1) : 1
+2 1 0 1 2 1 2, -1 (1) : 1
+2 2 1 2 2 1 2, -1 (1) : 1
+0 2 2 2 1 2 2, 1 (1) : 1
+2 2 2 1 0 2 2, 3 (1) : 1
+2 2 1 0 1 2 2, 4 (1) : 1
+0 0 2 2 2 2 2, 2 (1) : 1
+0 0 1 0 2 2 2, 5 (1) : 1
+0 1 0 0 1 2 2, 5 (1) : 1
+0 1 0 1 0 2 2, 5 (1) : 1
+1 0 0 1 0 2 2, 5 (1) : 1
+1 0 1 0 0 2 2, 5 (1) : 1
