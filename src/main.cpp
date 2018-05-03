@@ -42,6 +42,20 @@ extern void ForwardWaveGait();
 // Calculate based on max input size expected for one command
 #define INPUT_SIZE 8
 
+// Variables for serial reading.
+const byte numChars = 8;
+char receivedChars[numChars];
+// temporary array for use when parsing
+char tempChars[numChars];
+
+// variables to hold the parsed data
+char messageFromPC[numChars] = {0};
+int integerFromPC = 0;
+
+boolean newData = false;
+
+//============
+
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
 double result;
@@ -114,11 +128,59 @@ int limitValue(int mvalue)
   }
 }
 
+//============
+
+void recvWithStartEndMarkers() {
+    static boolean recvInProgress = false;
+    static byte ndx = 0;
+    char startMarker = '<';
+    char endMarker = '>';
+    char rc;
+
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
+
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 0;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+        }
+    }
+}
+
+//============
+
+void parseData() {      // split the data into its parts
+    char * strtokIndx; // this is used by strtok() as an index
+
+    strtokIndx = strtok(tempChars,"&");      // get the first part - the string
+    strcpy(messageFromPC, strtokIndx); // copy it to messageFromPC
+
+    strtokIndx = strtok(NULL, "&"); // this continues where the previous call left off
+    integerFromPC = atoi(strtokIndx);     // convert this part to an integer
+}
+
+//============
+
 // Setup code to run once.
 void setup() {
   // Start the communication at the serial ports.
   Serial1.begin(9600);
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   // Pin assigment of every servo of the hexapod.
   // In order to edit it, open the movements.cpp file.
@@ -202,42 +264,84 @@ void loop() {
 
   // Message string to be send
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial1.println(msg);
+  Serial.println(msg);
   //*/
 
-  delay(1000);
+  delay(200);
   //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
   // calculus to output a single char. It will be received via serial port,
   // and the board will execute a movement based on that char.
 
-  // Get next command from Serial (add 1 for final 0)
-  char input[INPUT_SIZE + 1];
-  byte size = Serial1.readBytes(input, INPUT_SIZE);
-  // Add the final 0 to end the C string
-  input[size] = 0;
+  // New comm protocol here.
+  recvWithStartEndMarkers();
+  if (newData == true) {
+    strcpy(tempChars, receivedChars);
+    // this temporary copy is necessary to protect the original data
+    // because strtok() used in parseData() replaces the commas with \0
+    parseData();
+    // Execute movements based on input command: <REV&###>.
+    if (integerFromPC <= 15.00 && integerFromPC >= -15.00) {
+      ForwardTripodGait();
+      Serial.println("|ACK|");
+    } else {
+      signed int n_total = round(integerFromPC * 2.5);
+      do {
+        if (n_total > 60) {
+          for (int i = 0; i < n_total / 60; i++) {
+            TurnLeftSoft(60);
+            n_total -= 60;
+            // Serial.println(n_total);
+          }
+        } else if (n_total > 0 && n_total <= 60) {
+          TurnLeftSoft(n_total);
+          n_total = 0;
+          // Serial.println(n_total);
+        } else if (n_total < -60) {
+          for (int i = -1; i >= n_total / 60; i--) {
+            TurnLeftSoft(-60);
+            n_total += 60;
+            // Serial.println(n_total);
+          }
+        } else if (n_total >= -60 && n_total < 0) {
+            TurnLeftSoft(n_total);
+            n_total = 0;
+            // Serial.println(n_total);
+        }
+      } while (n_total != 0);
+      Serial.println("|ACK|");
+    }
+    newData = false;
+  }
+  // Serial.println("No hay nada");
+
+  // // Get next command from Serial (add 1 for final 0)
+  // char input[INPUT_SIZE + 1];
+  // byte size = Serial1.readBytes(input, INPUT_SIZE);
+  // // Add the final 0 to end the C string
+  // input[size] = 0;
 
   // Read each command pair
-  char* separator = strchr(input, '&');
-  if (separator != 0)
-  {
-    // Actually split the string in 2: replace ':' with 0
-    *separator = 0;
-    ++separator;
-    double position = atof(separator);
-    // Serial.println(position);
-    // Do something with servoId and position
-    if (position <= 15.00 && position >= -15.00) {
-      ForwardTripodGait();
-    } else if (position < -15.00 && position >= -60.00) {
-      TurnRightSoft(abs(position));
-    } else if (position > 15.00 && position <= 60.00) {
-      TurnLeftSoft(abs(position));
-    } else {
-      Parche();
-    }
-  }
+  // char* separator = strchr(input, '&');
+  // if (separator != 0)
+  // {
+  //   // Actually split the string in 2: replace ':' with 0
+  //   *separator = 0;
+  //   ++separator;
+  //   double position = atof(separator);
+  //   // Serial.println(position);
+  //   // Do something with servoId and position
+  //   if (position <= 15.00 && position >= -15.00) {
+  //     ForwardTripodGait();
+  //   } else if (position < -15.00 && position >= -60.00) {
+  //     TurnRightSoft(abs(position));
+  //   } else if (position > 15.00 && position <= 60.00) {
+  //     TurnLeftSoft(abs(position));
+  //   } else {
+  //     Parche();
+  //   }
+  // }
 
   //*/
 }
