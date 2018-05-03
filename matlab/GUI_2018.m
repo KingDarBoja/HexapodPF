@@ -137,9 +137,9 @@ end
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif isunix
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif ispc
     s = serial('COM3');
 else
@@ -151,7 +151,7 @@ set(s,'DataBits',8);
 set(s,'StopBits',1);
 set(s,'BaudRate',9600);
 set(s,'Parity','none');
-set(s,'Timeout',5.0);
+set(s,'Timeout',10.0);
 % set(s,'Terminator','LF');
 set(s, 'InputBufferSize', 30)
 
@@ -229,69 +229,38 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         fprintf('.');
         pause(0.1);
     else
-        % Limpia el buffer de entrada del puerto serial.
-        flushinput(s);
-        sensorLect = fscanf(s,'%s',30);
-    % Verificamos si los primeros 3 caracteres son los necesarios para
-    % ejecutar la lógica difusa, en este caso, MSG.
-    try
-        if (strcmp(extractBefore(sensorLect,4),'MSG'))
-            % Incrementa el contador. 
-            cont = cont + 1;
-            
-            % Separa la cadena de caracteres y los guarda en una celda para
-            % luego ser convertidos en un arreglo de tipo 'double'.
-            dirSL = strsplit(sensorLect,':');
-            sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
-            sensor_val(sensor_val > 100) = 100;
+        try
+            % Limpia el buffer de entrada del puerto serial.
+            flushinput(s);
+            sensorLect = fscanf(s,'%s', 30);
+            if (strcmp(extractBefore(sensorLect,4),'MSG'))
+                % Incrementa el contador. 
+                cont = cont + 1;
+                % Separa la cadena de caracteres y los guarda en una celda para
+                % luego ser convertidos en un arreglo de tipo 'double'.
+                dirSL = strsplit(sensorLect,':');
+                sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
+                sensor_val(sensor_val > 100) = 100;
 
-            % Ejecuta la lógica difusa basado en el archivo
-            resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
+                % Ejecuta la lógica difusa basado en el archivo
+                resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
                                        sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
-            disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
-            % Basado en el resultado de la lógica difusa, realiza la siguiente
-            % toma de decisión y envía el comando a tráves del puerto serie.
-            n_total = round(2.5 * resultFZD);
-            if resultFZD <= 15 && resultFZD >= -15
-                fprintf(s,sprintf('%s&%.f','REV', n_total));
-                ci(1) = floor(ci(1) + A*cos(phi));
-                ci(2) = floor(ci(2) + A*sin(phi));
-                pause(4);
-            else
-                n_total = round(2.5 * resultFZD);
-                while n_total ~= 0
-                    if n_total > 60
-                        for i=1:fix(n_total/60)
-                            n_total = n_total - 60;
-                            phi = phi + deg2rad(24);
-                            fprintf(s,sprintf('%s&%.f','REV',60));
-                            pause(4);
-                        end        
-                    else
-                        if n_total > 0 && n_total <= 60
-                            phi = phi + deg2rad(n_total/2.5);
-                            fprintf(s,sprintf('%s&%.f','REV', n_total));
-                            n_total = n_total - n_total;
-                            pause(4);
-                        else
-                            if n_total < -60
-                                for i=-1:-1:fix(n_total/60)
-                                    n_total = n_total + 60;
-                                    phi = phi - deg2rad(24);
-                                    fprintf(s,sprintf('%s&%.f','REV',-60));
-                                    pause(4);
-                                end
-                            else
-                                if n_total >= -60 && n_total < 0
-                                    phi = phi + deg2rad(n_total/2.5);
-                                    fprintf(s,sprintf('%s&%.f','REV', n_total));
-                                    n_total = n_total - n_total;                            
-                                    pause(4);
-                                end
-                            end
-                        end
-                    end
+                if resultFZD <= 15 && resultFZD >= -15                    
+                    ci(1) = floor(ci(1) + A*cos(phi));
+                    ci(2) = floor(ci(2) + A*sin(phi));
+                else
+                    phi = phi + deg2rad(resultFZD);
                 end
+                disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
+                % Basado en el resultado de la lógica difusa, realiza la siguiente
+                % toma de decisión y envía el comando a tráves del puerto serie.            
+    %             flushinput(s);
+                fprintf(s,sprintf('<%s&%d>','REV', resultFZD));
+                pause(0.1);
+                sensorLect = fscanf(s,'%s', 6);
+                if strcmp(sensorLect,'|ACK|')
+                    disp('Recibido');
+                end            
             end
             coordx(cont) = ci(1);
             coordy(cont) = ci(2);
@@ -353,10 +322,9 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             hold off
             drawnow
             pause(0.5);
+        catch
+            disp('No se pudo sincronizar con el mensaje.');
         end
-    catch
-        disp('No se pudo sincronizar con el mensaje.');
-    end
     end
     
     % Obtiene el valor del checkbox

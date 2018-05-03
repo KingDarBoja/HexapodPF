@@ -8,9 +8,9 @@ end
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif isunix
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif ispc
     s = serial('COM8');
 else
@@ -46,7 +46,7 @@ cont = 1;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v4.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
 
 cf(1) = 100; ci(1) = 0;
 cf(2) = 50; ci(2) = 0;
@@ -88,7 +88,8 @@ while true
             sensor_val(sensor_val > 100) = 100;
 
             % Ejecuta la lógica difusa basado en el archivo
-            resultFZD = round(evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd));
+            resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
+                                       sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
             disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
             % Basado en el resultado de la lógica difusa, realiza la siguiente
             % toma de decisión y envía el comando a tráves del puerto serie.            

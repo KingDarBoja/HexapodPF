@@ -137,8 +137,8 @@ void recvWithStartEndMarkers() {
     char endMarker = '>';
     char rc;
 
-    while (Serial.available() > 0 && newData == false) {
-        rc = Serial.read();
+    while (Serial1.available() > 0 && newData == false) {
+        rc = Serial1.read();
 
         if (recvInProgress == true) {
             if (rc != endMarker) {
@@ -264,7 +264,7 @@ void loop() {
 
   // Message string to be send
   msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial.println(msg);
+  Serial1.println(msg);
   //*/
 
   delay(200);
@@ -284,7 +284,7 @@ void loop() {
     // Execute movements based on input command: <REV&###>.
     if (integerFromPC <= 15.00 && integerFromPC >= -15.00) {
       ForwardTripodGait();
-      Serial.println("|ACK|");
+      Serial1.println("|ACK|");
     } else {
       signed int n_total = round(integerFromPC * 2.5);
       do {
@@ -310,7 +310,7 @@ void loop() {
             // Serial.println(n_total);
         }
       } while (n_total != 0);
-      Serial.println("|ACK|");
+      Serial1.println("|ACK|");
     }
     newData = false;
   }
