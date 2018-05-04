@@ -120,12 +120,10 @@ HexCalibrator hexcal(82, 87, 90, 92, 92, 89, 86, 84, 93, 96, 86, 104, 80, 97, 88
 */
 int limitValue(int mvalue)
 {
-  if (mvalue > 100) {
+  if (mvalue > 100 || mvalue < 1) {
     mvalue = 100;
-    return mvalue;
-  } else {
-    return mvalue;
   }
+  return mvalue;
 }
 
 //============
