@@ -1,0 +1,69 @@
+[System]
+Name='FLC4_hexapod'
+Type='mamdani'
+Version=2.0
+NumInputs=5
+NumOutputs=1
+NumRules=5
+AndMethod='min'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='max'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='US-F'
+Range=[0 100]
+NumMFs=3
+MF1='Near':'trapmf',[-20 -5 25 30]
+MF2='Moderate':'trapmf',[25 30 40 45]
+MF3='Far':'trapmf',[40 50 110 120]
+
+[Input2]
+Name='US-LD'
+Range=[0 100]
+NumMFs=3
+MF1='Near':'trapmf',[-20 -5 25 30]
+MF2='Moderate':'trapmf',[25 30 40 45]
+MF3='Far':'trapmf',[40 50 110 120]
+
+[Input3]
+Name='US-RD'
+Range=[0 100]
+NumMFs=3
+MF1='Near':'trapmf',[-20 -5 25 30]
+MF2='Moderate':'trapmf',[25 30 40 45]
+MF3='Far':'trapmf',[40 50 110 120]
+
+[Input4]
+Name='US-L'
+Range=[0 100]
+NumMFs=3
+MF1='Near':'trapmf',[-20 -5 20 25]
+MF2='Moderate':'trapmf',[20 25 45 50]
+MF3='Far':'trapmf',[45 55 110 120]
+
+[Input5]
+Name='US-R'
+Range=[0 100]
+NumMFs=3
+MF1='Near':'trapmf',[-20 -5 20 25]
+MF2='Moderate':'trapmf',[20 25 45 50]
+MF3='Far':'trapmf',[45 55 110 120]
+
+[Output1]
+Name='output1'
+Range=[-135 135]
+NumMFs=5
+MF1='RH':'trimf',[-135 -90 -45]
+MF2='RS':'trimf',[-90 -45 0]
+MF3='F':'trimf',[-15 0 15]
+MF4='LS':'trimf',[0 45 90]
+MF5='LH':'trimf',[45 90 135]
+
+[Rules]
+2 2 2 2 3, 1 (1) : 1
+2 2 2 3 2, 5 (1) : 1
+0 3 0 2 2, 5 (1) : 1
+0 0 3 2 2, 5 (1) : 1
+2 2 2 2 2, 1 (1) : 1

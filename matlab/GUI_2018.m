@@ -172,7 +172,7 @@ ci = [str2double(get(handles.cix,'String')), ...
 % Ángulo inicial del robot.
 phi = pi/2;
 % Desplazamiento por avance en cm.
-A = 8;
+A = 15;
 % Umbral de error permitido en cm.
 err_perm = 10;
 
@@ -194,7 +194,7 @@ mapLx(cont) = 0;
 mapLy(cont) = 0;
 phimat = radtodeg(phi);
 betamat(cont) = 0;
-
+ex1 = {'Frontal', 'Diag-Izquierdo', 'Diag-Derecho', 'Izquierdo', 'Derecho'};
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
 fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
@@ -229,9 +229,10 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         fprintf('.');
         pause(0.1);
     else
+        flushinput(s);
         try
             % Limpia el buffer de entrada del puerto serial.
-            flushinput(s);
+            
             sensorLect = fscanf(s,'%s', 30);
             if (strcmp(extractBefore(sensorLect,4),'MSG'))
                 % Incrementa el contador. 
@@ -251,7 +252,16 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
                 else
                     phi = phi + deg2rad(resultFZD);
                 end
-                disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
+                ex2 = cell(1,5);
+                for i = 1:length(sensor_val(1:5))
+                    if(sensor_val(i) > 42)
+                        ex2{i} = 'far';
+                    else
+                        ex2{i} = 'near';
+                    end
+                end
+                disp(['Resultado: ', cellfun(@(a,b)[a(:,1:end) ': ' b(:,1:end)], ex1, ex2, 'uni', 0),  ...
+                    'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
                 % Basado en el resultado de la lógica difusa, realiza la siguiente
                 % toma de decisión y envía el comando a tráves del puerto serie.            
     %             flushinput(s);
@@ -279,14 +289,10 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             hold on
             p2 = plot(mapLx,mapLy,'o');
             set(p2,'Color','blue');
-            p3 = plot(ci(1),ci(2),'+');
+            p3 = plot(coordx,coordy,'+');
             set(p3,'Color','green');
-            title('Mapa');
-            hold off
-
-            axes(handles.graf_arana)
-            plot(coordx,coordy)
             title('Recorrido')
+            hold off
 
             axes(handles.graf_phi)
             plot(phimat)
@@ -322,7 +328,8 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             hold off
             drawnow
             pause(0.5);
-        catch
+        catch e
+            disp(e);
             disp('No se pudo sincronizar con el mensaje.');
         end
     end
