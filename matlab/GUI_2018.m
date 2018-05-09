@@ -137,11 +137,11 @@ end
 
 % Detecta el sistema operativo que se está utilizando.
 if ismac
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif isunix
-    s = serial('/dev/tty.usbmodem1431');
+    s = serial('/dev/tty.usbserial-AH02QBX1');
 elseif ispc
-    s = serial('COM8');
+    s = serial('COM3');
 else
     disp('Platforma no soportada');
 end
@@ -149,12 +149,15 @@ end
 % Configuración de las propiedades del objeto 's'.
 set(s,'DataBits',8);
 set(s,'StopBits',1);
-set(s,'BaudRate',115200);
+set(s,'BaudRate',9600);
 set(s,'Parity','none');
+set(s,'Timeout',10.0);
+% set(s,'Terminator','LF');
+set(s, 'InputBufferSize', 30)
 
 % Conecta el objeto al dispositivo y muestra su estado
 fopen(s);
-pause(5)
+pause(0.5);
 if strcmp(s.Status,'open')
     disp('Conexión exitosa al puerto especificado.')
 else
@@ -169,9 +172,7 @@ ci = [str2double(get(handles.cix,'String')), ...
 % Ángulo inicial del robot.
 phi = pi/2;
 % Desplazamiento por avance en cm.
-A = 8;
-% Ángulo de giro por movimiento de giro izquierda / derecha.
-alpha_t = degtorad(45);
+A = 15;
 % Umbral de error permitido en cm.
 err_perm = 10;
 
@@ -180,8 +181,8 @@ cont = 1;
 
 % Obtiene el estado del widget 'checkbox1'
 checkbox1Value = get(handles.checkbox1, 'value');
-diff_coordx = abs(cf(1)-ci(1));
-diff_coordy = abs(cf(2)-ci(2));
+diff_coordx = cf(1)-ci(1);
+diff_coordy = cf(2)-ci(2);
 
 % Inizializa las variables que corresponden a las coordenadas del robot y
 % los obstaculos para dibujarlos en el mapa.
@@ -193,92 +194,94 @@ mapLx(cont) = 0;
 mapLy(cont) = 0;
 phimat = radtodeg(phi);
 betamat(cont) = 0;
-
+ex1 = {'Frontal', 'Diag-Izquierdo', 'Diag-Derecho', 'Izquierdo', 'Derecho'};
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
-fzd = readfis('Fuzzy_Logic_Design_2018_v2.fis');
+fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
+
+s.ReadAsyncMode = 'continuous';
+% s.ReadAsyncMode = 'manual';
+pause(0.5);
 
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
 while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
         && checkbox1Value == 0)
-    
+    disp(cont);
     % Actualiza las coordenadas en base a los nuevos valores.
-    diff_coordx = abs(cf(1)-ci(1));
-    diff_coordy = abs(cf(2)-ci(2));
+    diff_coordx = cf(1)-ci(1);
+    diff_coordy = cf(2)-ci(2);
     
     % Ángulo entre el origen y el destino utilizando la función atan2 en el
     % intervalo [-pi, pi]
     delta = atan2(diff_coordy, diff_coordx);
-    betarad = radtodeg(delta) - radtodeg(phi);
+    betarad = round(radtodeg(delta)) - round(radtodeg(phi));
+    if (betarad > 180)
+        betarad = betarad - 360;
+    else
+        if (betarad < -180)
+            betarad = betarad + 360;
+        end
+    end
     
     % Obtiene las lecturas del puerto serie sin el terminador.
-    sensorLect = fgetl(s);
-    
-    % Verificamos si los primeros 3 caracteres son los necesarios para
-    % ejecutar la lógica difusa, en este caso, MSG.
-    try
-        if (strcmp(extractBefore(sensorLect,4),'MSG'))
-            % Incrementa el contador. 
-            cont = cont + 1;
-            % Separa la cadena de caracteres y los guarda en una celda para
-            % luego ser convertidos en un arreglo de tipo 'double'.
-            dirSL = strsplit(sensorLect,':');
-            sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
-            sensor_val(sensor_val > 100) = 100;
+    if s.bytesavailable < 18
+        fprintf('.');
+        pause(0.1);
+    else
+        flushinput(s);
+        try
+            % Limpia el buffer de entrada del puerto serial.
+            
+            sensorLect = fscanf(s,'%s', 30);
+            if (strcmp(extractBefore(sensorLect,4),'MSG'))
+                % Incrementa el contador. 
+                cont = cont + 1;
+                % Separa la cadena de caracteres y los guarda en una celda para
+                % luego ser convertidos en un arreglo de tipo 'double'.
+                dirSL = strsplit(sensorLect,':');
+                sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
+                sensor_val(sensor_val > 100) = 100;
 
-            % Ejecuta la lógica difusa basado en el archivo
-            resultFZD = evalfis([sensor_val(1:5), betarad, sensor_val(6)],fzd);
-
-            % Basado en el resultado de la lógica difusa, realiza la siguiente
-            % toma de decisión y envía el comando a tráves del puerto serie.
-            switch true
-                % Resultado: Giro a la izquierda.
-                case resultFZD >= -1 && resultFZD < 0.5
-                    fprintf(s, 'L');
-                    set(handles.Fuzzy_out,'String','Izquierda');
-                    disp("Izquierda" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi + alpha_t;
-                % Resultado: Avanza
-                case resultFZD >= 0.5 && resultFZD < 1.5
-                    fprintf(s, 'F');
-                    set(handles.Fuzzy_out,'String','Adelante');
-                    disp("Adelante" + newline + sensorLect + ...
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    % Computa el avance realizado.
+                % Ejecuta la lógica difusa basado en el archivo
+                resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
+                                       sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
+                if resultFZD <= 15 && resultFZD >= -15                    
                     ci(1) = floor(ci(1) + A*cos(phi));
                     ci(2) = floor(ci(2) + A*sin(phi));
-                    coordx(cont) = ci(1);
-                    coordy(cont) = ci(2);
-                % Resultado: Giro a la derecha
-                case resultFZD >= 1.5 && resultFZD < 2.5
-                    fprintf(s, 'R');
-                    set(handles.Fuzzy_out,'String','Derecha')
-                    disp("Derecha" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi - alpha_t;
-                case resultFZD >= 2.5 && resultFZD < 3.5
-                    fprintf(s, 'B');
-                    set(handles.Fuzzy_out,'String','Derecha')
-                    disp("Giro 180°" + newline + sensorLect + ... 
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
-                    phi = phi - degtorad(180);
-                    pause(2)
-                % Resultado: Caminata lenta (Wave gait).
-                otherwise
-                    fprintf(s, 'J');
-                    set(handles.Fuzzy_out,'String','Default')
-                    disp("Por defecto" + newline + sensorLect + ...
-                        num2str(betarad) + ' - logica:' + num2str(resultFZD));
+                else
+                    phi = phi + deg2rad(resultFZD);
+                end
+                ex2 = cell(1,5);
+                for i = 1:length(sensor_val(1:5))
+                    if(sensor_val(i) > 42)
+                        ex2{i} = 'far';
+                    else
+                        ex2{i} = 'near';
+                    end
+                end
+                disp(['Resultado: ', cellfun(@(a,b)[a(:,1:end) ': ' b(:,1:end)], ex1, ex2, 'uni', 0),  ...
+                    'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
+                % Basado en el resultado de la lógica difusa, realiza la siguiente
+                % toma de decisión y envía el comando a tráves del puerto serie.            
+    %             flushinput(s);
+                fprintf(s,sprintf('<%s&%d>','REV', resultFZD));
+                pause(0.1);
+                sensorLect = fscanf(s,'%s', 6);
+                if strcmp(sensorLect,'|ACK|')
+                    disp('Recibido');
+                end            
             end
-            pause(5.1)
+            coordx(cont) = ci(1);
+            coordy(cont) = ci(2);
             % Realiza los cálculos de la ubicación de los objetos.
             phimat(cont) = radtodeg(phi);
+            betamat(cont) = radtodeg(delta);
             mapRx(cont) = coordx(cont) + sensor_val(5) * cos(phi-pi/2);
             mapRy(cont) = coordy(cont) + sensor_val(5) * sin(phi-pi/2);
             mapLx(cont) = coordx(cont) + sensor_val(4) * cos(phi+pi/2);
             mapLy(cont) = coordy(cont) + sensor_val(4) * sin(phi+pi/2);
+            
             % Actualiza el gráfico.
             axes(handles.graf_arana)
             p1 = plot(mapRx,mapRy,'o');
@@ -286,13 +289,10 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             hold on
             p2 = plot(mapLx,mapLy,'o');
             set(p2,'Color','blue');
-            p3 = plot(ci(1),ci(2),'+');
+            p3 = plot(coordx,coordy,'+');
             set(p3,'Color','green');
-            title('Mapa');        
-
-            axes(handles.graf_arana)
-            plot(coordx,coordy)
             title('Recorrido')
+            hold off
 
             axes(handles.graf_phi)
             plot(phimat)
@@ -312,7 +312,6 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             set(handles.inst_info,'String',info)
 
             axes(handles.graf_polar)
-            phimat_r = phimat;
             hex_m = sqrt(coordx.^2 + coordy.^2);
             hex_p = atan2(coordy,coordx);
 
@@ -322,15 +321,17 @@ while ((diff_coordx > err_perm || diff_coordy > err_perm) ...
             h3a = polar(hex_p,hex_m);
             set(h3a,'color','b','linewidth',2)
             hold on
-            h3b = polar(phimat_r, hex_m);
+            h3b = polar(deg2rad(phimat), hex_m);
             set(h3b,'color','r','linewidth',2)
             h3c = polar(ang, f_ang);
             set(h3c,'color','k','linewidth',2,'LineStyle','--')
             hold off
             drawnow
+            pause(0.5);
+        catch e
+            disp(e);
+            disp('No se pudo sincronizar con el mensaje.');
         end
-    catch
-        disp('No se pudo sincronizar con el mensaje.');
     end
     
     % Obtiene el valor del checkbox

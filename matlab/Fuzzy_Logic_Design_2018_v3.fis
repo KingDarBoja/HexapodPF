@@ -1,5 +1,5 @@
 [System]
-Name='Fuzzy_Logic_Design_2018_v2'
+Name='Fuzzy_Logic_Design_2018_v3'
 Type='mamdani'
 Version=2.0
 NumInputs=7
@@ -64,11 +64,15 @@ MF3='abajo':'trapmf',[-100 -90 -20 -10]
 
 [Output1]
 Name='output1'
-Range=[-60 60]
-NumMFs=3
-MF1='L':'trapmf',[0 30 60 80]
-MF2='F':'trimf',[-30 0 30]
-MF3='R':'trapmf',[-80 -60 -30 0]
+Range=[-180 180]
+NumMFs=7
+MF1='L':'trimf',[45 90 135]
+MF2='F':'trimf',[-45 0 45]
+MF3='R':'trimf',[-135 -90 -45]
+MF4='RF':'trimf',[-90 -45 0]
+MF5='LF':'trimf',[0 45 90]
+MF6='LB':'trapmf',[90 135 180 200]
+MF7='RB':'trapmf',[-200 -180 -135 -90]
 
 [Rules]
 0 2 0 2 0 3 0, 1 (1) : 1

@@ -1,0 +1,104 @@
+[System]
+Name='Fuzzy_Logic_Design_2018_v4'
+Type='mamdani'
+Version=2.0
+NumInputs=7
+NumOutputs=1
+NumRules=23
+AndMethod='prod'
+OrMethod='max'
+ImpMethod='min'
+AggMethod='sum'
+DefuzzMethod='centroid'
+
+[Input1]
+Name='FU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input2]
+Name='LU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input3]
+Name='RU'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input4]
+Name='L'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input5]
+Name='R'
+Range=[0 100]
+NumMFs=2
+MF1='Near':'trapmf',[-25 -10 40 50]
+MF2='Far':'trapmf',[40 45 100 100]
+
+[Input6]
+Name='diff'
+Range=[-180 180]
+NumMFs=7
+MF1='NS':'trimf',[-90 -45 0]
+MF2='zero':'trimf',[-45 0 45]
+MF3='PS':'trimf',[0 45 90]
+MF4='NB':'trapmf',[-200 -180 -150 -90]
+MF5='NM':'trimf',[-135 -90 -45]
+MF6='PM':'trimf',[45 90 135]
+MF7='PB':'trapmf',[90 135 180 200]
+
+[Input7]
+Name='slope_y'
+Range=[-90 90]
+NumMFs=3
+MF1='arriba':'trapmf',[10 20 90 100]
+MF2='plano':'trapmf',[-15 -10 10 15]
+MF3='abajo':'trapmf',[-100 -90 -20 -10]
+
+[Output1]
+Name='output1'
+Range=[-180 180]
+NumMFs=7
+MF1='L':'trimf',[45 90 135]
+MF2='F':'trimf',[-20 0 20]
+MF3='R':'trimf',[-135 -90 -45]
+MF4='RF':'trimf',[-90 -45 0]
+MF5='LF':'trimf',[0 45 90]
+MF6='LB':'trapmf',[90 135 180 200]
+MF7='RB':'trapmf',[-200 -180 -150 -90]
+
+[Rules]
+0 1 2 0 0 0 0, 3 (1) : 1
+0 2 1 0 0 0 0, 1 (1) : 1
+0 0 0 0 1 0 0, 1 (1) : 1
+0 0 0 1 0 0 0, 3 (1) : 1
+0 2 1 0 1 0 0, 1 (1) : 1
+0 1 2 1 0 0 0, 3 (1) : 1
+1 0 0 2 0 0 0, 1 (1) : 1
+2 0 0 0 0 0 0, 2 (1) : 1
+2 0 0 1 1 0 0, 2 (1) : 1
+1 1 1 1 2 0 0, 3 (1) : 1
+1 1 1 2 1 0 0, 1 (1) : 1
+1 1 1 1 1 0 0, 3 (1) : 1
+1 0 0 0 0 1 0, 4 (1) : 1
+1 0 0 0 0 5 0, 3 (1) : 1
+1 0 0 0 0 3 0, 5 (1) : 1
+1 0 0 0 0 6 0, 1 (1) : 1
+0 0 0 0 0 2 0, 2 (1) : 1
+0 0 0 0 0 3 0, 5 (1) : 1
+0 0 0 0 0 6 0, 1 (1) : 1
+0 0 0 0 0 7 0, 6 (1) : 1
+0 0 0 0 0 4 0, 7 (1) : 1
+0 0 0 0 0 5 0, 3 (1) : 1
+0 0 0 0 0 1 0, 4 (1) : 1
