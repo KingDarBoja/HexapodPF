@@ -40,7 +40,8 @@ s.ReadAsyncMode = 'continuous';
 pause(0.5);
 
 %% Valores iniciales
-
+% Desplazamiento por avance en cm.
+A = 20;
 % Inicializa el contador.
 cont = 1;
 
@@ -48,10 +49,10 @@ cont = 1;
 % algoritmo de lógica difusa.
 fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
 
-cf(1) = 100; ci(1) = 0;
-cf(2) = 50; ci(2) = 0;
+cf(1) = 0; ci(1) = 0;
+cf(2) = 150; ci(2) = 0;
 phi = pi/2;
-
+ex1 = {'Frontal', 'Diag-Izquierdo', 'Diag-Derecho', 'Izquierdo', 'Derecho'};
 %% Código principal
 while true
 %     tic
@@ -72,12 +73,11 @@ while true
     end
     
     % Obtiene las lecturas del puerto serie sin el terminador.
-    if s.bytesavailable < 18
-        fprintf('.');
+    if s.bytesavailable < 18        
         pause(0.1);
-    else
-        flushinput(s);
-        sensorLect = fscanf(s,'%s', 30);
+    else        
+        sensorLect = fscanf(s,'%s');
+        disp(sensorLect);
         if (strcmp(extractBefore(sensorLect,4),'MSG'))
             % Incrementa el contador. 
             cont = cont + 1;
@@ -85,21 +85,44 @@ while true
             % luego ser convertidos en un arreglo de tipo 'double'.
             dirSL = strsplit(sensorLect,':');
             sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
-            sensor_val(sensor_val > 100) = 100;
+            sensor_val(sensor_val > 100) = 100;                
 
             % Ejecuta la lógica difusa basado en el archivo
             resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
-                                       sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
-            disp(['Resultado: ', dirSL,  'betarad: ', num2str(betarad), 'Logica: ', num2str(resultFZD)]);
+                                   sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
+            if resultFZD <= 15 && resultFZD >= -15                    
+                ci(1) = round(ci(1) + A*cos(phi));
+                ci(2) = round(ci(2) + A*sin(phi));
+            else
+                phi = phi + deg2rad(resultFZD);
+            end
+            ex2 = cell(1,5);
+            for i = 1:length(sensor_val(1:5))
+                if(sensor_val(i) >= 55)
+                    ex2{i} = 'far';
+                else
+                    ex2{i} = 'near';
+                end
+            end
+            % Imprime los datos por iteracciòn.
+            fprintf('Resultado N°%d: \n', cont);
+            disp(cellfun(@(a,b)[a(:,1:end) ': ' b(:,1:end)], ex1, ex2, 'uni', 0));
+            fprintf('Sensorica: [%d;%d;%d;%d;%d;%d;%.2f] \n', ...
+                sensor_val(4), sensor_val(2), sensor_val(1), ...
+                sensor_val(3), sensor_val(5), betarad, sensor_val(6));
+            fprintf('Araña: %d | Beta: %d | Logica: %d\n', round(radtodeg(phi)), betarad, resultFZD);
+            disp('##################################################');
             % Basado en el resultado de la lógica difusa, realiza la siguiente
             % toma de decisión y envía el comando a tráves del puerto serie.            
-%             flushinput(s);
-            fprintf(s,sprintf('<%s&%d>','REV', resultFZD));
+            flushinput(s);
+            fprintf(s,sprintf('<%s&%d>','REV', resultFZD));                
             pause(0.1);
             sensorLect = fscanf(s,'%s', 6);
             if strcmp(sensorLect,'|ACK|')
-                disp('Recibido');
-            end            
+                disp('Mensaje recibido.');
+                disp('##################################################');
+                flushinput(s);
+            end
         end
     end
 %     toc
