@@ -8,8 +8,8 @@ NumRules=16
 AndMethod='min'
 OrMethod='max'
 ImpMethod='min'
-AggMethod='max'
-DefuzzMethod='centroid'
+AggMethod='sum'
+DefuzzMethod='mom'
 
 [Input1]
 Name='US-F'

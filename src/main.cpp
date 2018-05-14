@@ -238,34 +238,7 @@ void loop() {
   gyroCalibrationLoop();
   //*/
 
-  //*
-  // ======================= GYROSCOPE MEASUREMENT =======================
-  // Measure raw data from sensor and print the processed data.
-  result = gyroMeasureLoop();
-  //*/
-
-  //*
-  // ========================= ULTRASONIC MEASURE =========================
-  // Checking the values of Ultrasonic sensor and storing them into int variables.
-  int cm_FX = ping(TP_FX, EP_FX);
-  int cm_RD = ping(TP_RD, EP_RD);
-  int cm_LD = ping(TP_LD, EP_LD);
-  int cm_RX  = ping(TP_RX , EP_RX );
-  int cm_LX  = ping(TP_LX , EP_LX );
-
-  // Conversion from int to string in order to send the package through serial port
-  stringFX =  String(limitValue(cm_FX));
-  stringRD =  String(limitValue(cm_RD));
-  stringLD =  String(limitValue(cm_LD));
-  stringRX =  String(limitValue(cm_RX));
-  stringLX =  String(limitValue(cm_LX));
-
-  // Message string to be send
-  msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
-  Serial1.println(msg);
-  //*/
-
-  delay(200);
+  // delay(200);
   //*
   // ========================= HEXAPOD ACTIONS =========================
   // The remote computer will receive the message string and make computational
@@ -311,35 +284,35 @@ void loop() {
       Serial1.println("|ACK|");
     }
     newData = false;
+  } else {
+    //*
+    // ======================= GYROSCOPE MEASUREMENT =======================
+    // Measure raw data from sensor and print the processed data.
+    result = gyroMeasureLoop();
+    //*/
+
+    //*
+    // ========================= ULTRASONIC MEASURE =========================
+    // Checking the values of Ultrasonic sensor and storing them into int variables.
+    int cm_FX = ping(TP_FX, EP_FX);
+    int cm_RD = ping(TP_RD, EP_RD);
+    int cm_LD = ping(TP_LD, EP_LD);
+    int cm_RX  = ping(TP_RX , EP_RX );
+    int cm_LX  = ping(TP_LX , EP_LX );
+
+    // Conversion from int to string in order to send the package through serial port
+    stringFX =  String(limitValue(cm_FX));
+    stringRD =  String(limitValue(cm_RD));
+    stringLD =  String(limitValue(cm_LD));
+    stringRX =  String(limitValue(cm_RX));
+    stringLX =  String(limitValue(cm_LX));
+
+    // Message string to be send
+    msg = "MSG:" + stringFX + ":" + stringLD + ":" + stringRD + ":" + stringLX + ":" + stringRX + ":" + String(result);
+    Serial1.println(msg);
+    delay(100);
+    //*/
   }
-  // Serial.println("No hay nada");
-
-  // // Get next command from Serial (add 1 for final 0)
-  // char input[INPUT_SIZE + 1];
-  // byte size = Serial1.readBytes(input, INPUT_SIZE);
-  // // Add the final 0 to end the C string
-  // input[size] = 0;
-
-  // Read each command pair
-  // char* separator = strchr(input, '&');
-  // if (separator != 0)
-  // {
-  //   // Actually split the string in 2: replace ':' with 0
-  //   *separator = 0;
-  //   ++separator;
-  //   double position = atof(separator);
-  //   // Serial.println(position);
-  //   // Do something with servoId and position
-  //   if (position <= 15.00 && position >= -15.00) {
-  //     ForwardTripodGait();
-  //   } else if (position < -15.00 && position >= -60.00) {
-  //     TurnRightSoft(abs(position));
-  //   } else if (position > 15.00 && position <= 60.00) {
-  //     TurnLeftSoft(abs(position));
-  //   } else {
-  //     Parche();
-  //   }
-  // }
 
   //*/
 }
