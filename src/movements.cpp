@@ -341,67 +341,67 @@ void ForwardWaveGait() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i+elev_angle, s22i, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i-10, s21i, s31i, s41i, s51i, s61i,
+  MoveCommand(s11i-20, s21i, s31i, s41i, s51i, s61i,
               s12i-8-elev_angle, s22i, s32i, s42i, s52i, s62i,
               s13i-27, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i+elev_angle, s32i, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i, s21i-28, s31i, s41i, s51i, s61i,
+  MoveCommand(s11i, s21i-38, s31i, s41i, s51i, s61i,
               s12i, s22i-elev_angle, s32i, s42i, s52i, s62i,
               s13i, s23i-6, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i, s32i+elev_angle, s42i, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i, s21i, s31i-25, s41i, s51i, s61i,
+  MoveCommand(s11i, s21i, s31i-35, s41i, s51i, s61i,
               s12i, s22i, s32i-5-elev_angle, s42i, s52i, s62i,
               s13i, s23i, s33i+10, s43i, s53i, s63i,
-              10);
+              5);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i, s32i, s42i+elev_angle, s52i, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i, s21i, s31i, s41i+25, s51i, s61i,
+  MoveCommand(s11i, s21i, s31i, s41i+35, s51i, s61i,
               s12i, s22i, s32i, s42i-5-elev_angle, s52i, s62i,
               s13i, s23i, s33i, s43i+10, s53i, s63i,
-              10);
+              5);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i, s32i, s42i, s52i+elev_angle, s62i,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i, s21i, s31i, s41i, s51i+28, s61i,
+  MoveCommand(s11i, s21i, s31i, s41i, s51i+38, s61i,
               s12i, s22i, s32i, s42i, s52i-elev_angle, s62i,
               s13i, s23i, s33i, s43i, s53i-6, s63i,
-              10);
+              5);
 
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
               s12i, s22i, s32i, s42i, s52i, s62i+elev_angle,
               s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              5);
 
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i+10,
+  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i+20,
               s12i, s22i, s32i, s42i, s52i, s62i-8-elev_angle,
               s13i, s23i, s33i, s43i, s53i, s63i-27,
-              10);
+              5);
 
-  MoveCommand(s11i+10, s21i+28, s31i+25, s41i-25, s51i-28, s61i-10,
+  MoveCommand(s11i+20, s21i+38, s31i+35, s41i-35, s51i-38, s61i-20,
               s12i+8, s22i, s32i+5, s42i+5, s52i, s62i+8,
               s13i+27, s23i+6, s33i-10, s43i-10, s53i+6, s63i+27,
-              10);
+              5);
 
   // MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
   //             s12i, s22i, s32i, s42i, s52i, s62i,

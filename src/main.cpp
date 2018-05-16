@@ -254,7 +254,14 @@ void loop() {
     parseData();
     // Execute movements based on input command: <REV&###>.
     if (integerFromPC <= 15.00 && integerFromPC >= -15.00) {
-      ForwardTripodGait();
+      if (result > 5.0 || result < -5.0) {
+        ForwardWaveGait();
+        ForwardWaveGait();
+        ForwardWaveGait();
+        ForwardWaveGait();
+      } else {
+        ForwardTripodGait();
+      }
       Serial1.println("|ACK|");
     } else {
       signed int n_total = round(integerFromPC * 2.5);

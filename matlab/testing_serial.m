@@ -45,13 +45,17 @@ pause(0.5);
 A = 20;
 % Inicializa el contador.
 cont = 1;
+% Umbral de error permitido en cm.
+err_perm = 20;
 
 % Carga el archivo que contiene las funciones de membresía y reglas para el
 % algoritmo de lógica difusa.
 fzd = readfis('Fuzzy_Logic_Design_2018_Augusto.fis');
 
-cf(1) = 0; ci(1) = 0;
-cf(2) = 150; ci(2) = 0;
+cf(1) = -120; ci(1) = 0;
+cf(2) = 120; ci(2) = 0;
+diff_coordx = cf(1)-ci(1);
+diff_coordy = cf(2)-ci(2);
 phi = pi/2;
 ex1 = {'Frontal', 'Diag-Izquierdo', 'Diag-Derecho', 'Izquierdo', 'Derecho'};
 
@@ -61,7 +65,7 @@ mov_frontal(2) = 'S'; % Movimiento actual.
 sensor_hist = [[0 0]; [0 0]];
 wallStart = 0;
 %% Código principal
-while true
+while ((abs(diff_coordx) > err_perm || abs(diff_coordy) > err_perm))
 %     tic
     % Actualiza las coordenadas en base a los nuevos valores.
     diff_coordx = cf(1)-ci(1);
@@ -111,7 +115,7 @@ while true
                         fprintf(s,sprintf('<%s&%d>','REV', 0));
                         phi = phi + deg2rad(90);
                         mov_frontal(2) = 'T';
-                        disp('Lo hizo a la izquierda');
+                        disp('Lo hizo a la derecha');
                     else
                         if sensor_hist(4) > sensor_hist(3) + 30
                             flushinput(s);
@@ -123,7 +127,7 @@ while true
                             pause(0.1);
                             phi = phi + deg2rad(-90);
                             mov_frontal(2) = 'T';
-                            disp('Lo hizo a la derecha');
+                            disp('Lo hizo a la izquierda');
                         else
                             sensor_hist(1) = sensor_hist(2);
                             sensor_hist(3) = sensor_hist(4);
@@ -163,6 +167,7 @@ while true
                         sensor_val(4), sensor_val(2), sensor_val(1), ...
                         sensor_val(3), sensor_val(5), betarad);
                     fprintf('Araña: %d | Beta: %d | Logica: %d\n', round(radtodeg(phi)), betarad, resultFZD);
+                    fprintf('Posiciòn: X - %d, Y - %d \n', ci(1), ci(2));
                     disp('##################################################');
                     % Basado en el resultado de la lógica difusa, realiza la siguiente
                     % toma de decisión y envía el comando a tráves del puerto serie.            

@@ -203,6 +203,11 @@ s.ReadAsyncMode = 'continuous';
 % s.ReadAsyncMode = 'manual';
 pause(0.5);
 
+% Estado del movimiento.
+mov_frontal(1) = 'S'; % Movimiento previo.
+mov_frontal(2) = 'S'; % Movimiento actual.
+sensor_hist = [[0 0]; [0 0]];
+
 % Ciclo para revisar si el robot llegó a la meta o si se ha detenido el
 % programa utilizando el estado del checkbox.
 while ((abs(diff_coordx) > err_perm || abs(diff_coordy) > err_perm) ...
@@ -240,43 +245,89 @@ while ((abs(diff_coordx) > err_perm || abs(diff_coordy) > err_perm) ...
                 % luego ser convertidos en un arreglo de tipo 'double'.
                 dirSL = strsplit(sensorLect,':');
                 sensor_val = str2double(dirSL(~isnan(cellfun(@str2double,dirSL))));
-                sensor_val(sensor_val > 100) = 100;                
+                sensor_val(sensor_val > 100) = 100;
 
-                % Ejecuta la lógica difusa basado en el archivo
-                resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
-                                       sensor_val(3), sensor_val(5), betarad, sensor_val(6)],fzd));
-                if resultFZD <= 15 && resultFZD >= -15                    
-                    ci(1) = round(ci(1) + A*cos(phi));
-                    ci(2) = round(ci(2) + A*sin(phi));
-                else
-                    phi = phi + deg2rad(resultFZD);
-                end
-                ex2 = cell(1,5);
-                for i = 1:length(sensor_val(1:5))
-                    if(sensor_val(i) >= 55)
-                        ex2{i} = 'far';
+                sensor_hist(2) = sensor_val(4);
+                sensor_hist(4) = sensor_val(5);
+                if mov_frontal(1) == 'F' && mov_frontal(2) == 'F'
+                    fprintf('¡Verifica los sensores! \n ---- Anterior --- \n');
+                    fprintf('Sensor Izquierdo: %d | Sensor Derecho: %d \n', ...
+                        sensor_hist(1), sensor_hist(3));
+                    fprintf('--- Actual --- \n Sensor Izquierdo: %d | Sensor Derecho: %d \n', ...
+                        sensor_hist(2), sensor_hist(4));
+                    if sensor_hist(2) > sensor_hist(1) + 30
+                        flushinput(s);
+                        fprintf(s,sprintf('<%s&%d>','REV', 0));
+                        pause(0.1);
+                        fprintf(s,sprintf('<%s&%d>','REV', 80));
+                        pause(0.1);
+                        fprintf(s,sprintf('<%s&%d>','REV', 0));
+                        phi = phi + deg2rad(90);
+                        mov_frontal(2) = 'T';
+                        disp('Lo hizo a la derecha');
                     else
-                        ex2{i} = 'near';
+                        if sensor_hist(4) > sensor_hist(3) + 30
+                            flushinput(s);
+                            fprintf(s,sprintf('<%s&%d>','REV', 0));
+                            pause(0.1);
+                            fprintf(s,sprintf('<%s&%d>','REV', -80));
+                            pause(0.1);
+                            fprintf(s,sprintf('<%s&%d>','REV', 0));
+                            pause(0.1);
+                            phi = phi + deg2rad(-90);
+                            mov_frontal(2) = 'T';
+                            disp('Lo hizo a la izquierda');
+                        else
+                            sensor_hist(1) = sensor_hist(2);
+                            sensor_hist(3) = sensor_hist(4);
+                            mov_frontal(1) = 'T';
+                            disp('No hizo nada');
+                        end
                     end
-                end
-                % Imprime los datos por iteracciòn.
-                fprintf('Resultado N°%d: \n', cont);
-                disp(cellfun(@(a,b)[a(:,1:end) ': ' b(:,1:end)], ex1, ex2, 'uni', 0));
-                fprintf('Sensorica: [%d;%d;%d;%d;%d;%d;%.2f] \n', ...
-                    sensor_val(4), sensor_val(2), sensor_val(1), ...
-                    sensor_val(3), sensor_val(5), betarad, sensor_val(6));
-                fprintf('Araña: %d | Beta: %d | Logica: %d\n', round(radtodeg(phi)), betarad, resultFZD);
-                disp('##################################################');
-                % Basado en el resultado de la lógica difusa, realiza la siguiente
-                % toma de decisión y envía el comando a tráves del puerto serie.            
-                flushinput(s);
-                fprintf(s,sprintf('<%s&%d>','REV', resultFZD));                
-                pause(0.1);
-                sensorLect = fscanf(s,'%s', 6);
-                if strcmp(sensorLect,'|ACK|')
-                    disp('Mensaje recibido.');
-                    disp('##################################################');
                     flushinput(s);
+                else
+                    % Ejecuta la lógica difusa basado en el archivo
+                    resultFZD = round(evalfis([sensor_val(4), sensor_val(2), sensor_val(1), ...
+                                           sensor_val(3), sensor_val(5), betarad],fzd));
+                    mov_frontal(1) = mov_frontal(2);                
+                    if resultFZD <= 15 && resultFZD >= -15
+                        ci(1) = round(ci(1) + A*cos(phi));
+                        ci(2) = round(ci(2) + A*sin(phi));
+                        mov_frontal(2) = 'F';
+                    else
+                        phi = phi + deg2rad(resultFZD);
+                        mov_frontal(2) = 'T';
+                    end
+                    sensor_hist(1) = sensor_hist(2);
+                    sensor_hist(3) = sensor_hist(4);
+                    % Impresión de valores de manera verbal.
+                    ex2 = cell(1,5);
+                    for i = 1:length(sensor_val(1:5))
+                        if(sensor_val(i) >= 35)
+                            ex2{i} = 'far';
+                        else
+                            ex2{i} = 'near';
+                        end
+                    end
+                    % Imprime los datos por iteracciòn.
+                    fprintf('Resultado N°%d: \n', cont);
+                    disp(cellfun(@(a,b)[a(:,1:end) ': ' b(:,1:end)], ex1, ex2, 'uni', 0));
+                    fprintf('Sensorica: [%d;%d;%d;%d;%d;%d] \n', ...
+                        sensor_val(4), sensor_val(2), sensor_val(1), ...
+                        sensor_val(3), sensor_val(5), betarad);
+                    fprintf('Araña: %d | Beta: %d | Logica: %d\n', round(radtodeg(phi)), betarad, resultFZD);
+                    fprintf('Posiciòn: X - %d, Y - %d \n', ci(1), ci(2));
+                    disp('##################################################');
+                    % Basado en el resultado de la lógica difusa, realiza la siguiente
+                    % toma de decisión y envía el comando a tráves del puerto serie.            
+                    flushinput(s);
+                    fprintf(s,sprintf('<%s&%d>','REV', resultFZD));
+                    pause(0.1);
+                    sensorLect = fscanf(s,'%s', 6);
+                    if strcmp(sensorLect,'|ACK|')
+                        disp('Mensaje recibido.');
+                        disp('##################################################');
+                    end
                 end
             end
             coordx(cont) = ci(1);
