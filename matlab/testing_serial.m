@@ -105,7 +105,9 @@ while true
                     if sensor_hist(2) > sensor_hist(1) + 30
                         flushinput(s);
                         fprintf(s,sprintf('<%s&%d>','REV', 0));
+                        pause(0.1);
                         fprintf(s,sprintf('<%s&%d>','REV', 80));
+                        pause(0.1);
                         fprintf(s,sprintf('<%s&%d>','REV', 0));
                         phi = phi + deg2rad(90);
                         mov_frontal(2) = 'T';
@@ -114,8 +116,11 @@ while true
                         if sensor_hist(4) > sensor_hist(3) + 30
                             flushinput(s);
                             fprintf(s,sprintf('<%s&%d>','REV', 0));
+                            pause(0.1);
                             fprintf(s,sprintf('<%s&%d>','REV', -80));
+                            pause(0.1);
                             fprintf(s,sprintf('<%s&%d>','REV', 0));
+                            pause(0.1);
                             phi = phi + deg2rad(-90);
                             mov_frontal(2) = 'T';
                             disp('Lo hizo a la derecha');
