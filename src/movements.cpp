@@ -310,31 +310,38 @@ void ForwardTripodGait() {
               5);
 }
 
-void PitchWalking() {
+void PitchWalkingUp() {
+  // MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+  //             s12i+elev_angle, s22i, s32i, s42i+elev_angle, s52i, s62i,
+  //             s13i, s23i, s33i, s43i, s53i, s63i,
+  //             5);
+  //
+  // MoveCommand(s11i+58, s21i, s31i, s41i+58, s51i, s61i,
+  //             s12i-elev_angle, s22i, s32i, s42i-elev_angle, s52i, s62i,
+  //             s13i, s23i, s33i, s43i, s53i, s63i,
+  //             5);
+  //
+  // MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
+  //             s12i, s22i, s32i+elev_angle, s42i, s52i, s62i+elev_angle,
+  //             s13i, s23i, s33i, s43i, s53i, s63i,
+  //             5);
+  //
+  // MoveCommand(s11i, s21i, s31i-58, s41i, s51i, s61i-58,
+  //             s12i, s22i, s32i-elev_angle, s42i, s52i, s62i-elev_angle,
+  //             s13i, s23i, s33i, s43i, s53i, s63i,
+  //             5);
+
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i+elev_angle, s22i, s32i, s42i+elev_angle, s52i, s62i,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
+              s12i, s22i-24, s32i-40, s42i-40, s52i-24, s62i,
+              s13i, s23i-26, s33i-38, s43i-38, s53i-26, s63i,
+              5);
+}
 
-  MoveCommand(s11i+58, s21i, s31i, s41i+58, s51i, s61i,
-              s12i-elev_angle, s22i, s32i, s42i-elev_angle, s52i, s62i,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
-
+void PitchWalkingDown() {
   MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i, s22i, s32i+elev_angle, s42i, s52i, s62i+elev_angle,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
-
-  MoveCommand(s11i, s21i, s31i-58, s41i, s51i, s61i-58,
-              s12i, s22i, s32i-elev_angle, s42i, s52i, s62i-elev_angle,
-              s13i, s23i, s33i, s43i, s53i, s63i,
-              10);
-
-  MoveCommand(s11i, s21i, s31i, s41i, s51i, s61i,
-              s12i+74, s22i+32, s32i, s42i, s52i+32, s62i+74,
-              s13i+148, s23i+118, s33i, s43i, s53i+118, s63i+148,
-              10);
+              s12i, s22i+24, s32i+40, s42i+40, s52i+24, s62i,
+              s13i, s23i+26, s33i+38, s43i+38, s53i+26, s63i,
+              5);
 }
 
 void ForwardWaveGait() {

@@ -236,7 +236,7 @@ while ((abs(diff_coordx) > err_perm || abs(diff_coordy) > err_perm) ...
     else        
         try
             % Limpia el buffer de entrada del puerto serial.
-            sensorLect = fscanf(s, '%s');
+            sensorLect = fscanf(s, '%s', 30);
             % disp(sensorLect);
             if (strcmp(extractBefore(sensorLect,4),'MSG'))
                 % Incrementa el contador. 
@@ -315,7 +315,8 @@ while ((abs(diff_coordx) > err_perm || abs(diff_coordy) > err_perm) ...
                     fprintf('Sensorica: [%d;%d;%d;%d;%d;%d] \n', ...
                         sensor_val(4), sensor_val(2), sensor_val(1), ...
                         sensor_val(3), sensor_val(5), betarad);
-                    fprintf('Araña: %d | Beta: %d | Logica: %d\n', round(radtodeg(phi)), betarad, resultFZD);
+                    fprintf('Araña: %d | Beta: %d | Logica: %d | Elevación: %d\n', ...
+                        round(radtodeg(phi)), betarad, resultFZD, round(sensor_val(6)));
                     fprintf('Posiciòn: X - %d, Y - %d \n', ci(1), ci(2));
                     disp('##################################################');
                     % Basado en el resultado de la lógica difusa, realiza la siguiente

@@ -36,7 +36,8 @@ extern void Parche();
 extern void TurnRightSoft(double var_angle);
 extern void TurnLeftSoft(double var_angle);
 extern void ForwardTripodGait();
-extern void PitchWalking();
+extern void PitchWalkingUp();
+extern void PitchWalkingDown();
 extern void ForwardWaveGait();
 
 // Calculate based on max input size expected for one command
@@ -58,7 +59,8 @@ boolean newData = false;
 
 // Declare bool variable to check if the hexapod has performed 'WakeUp' Action.
 bool awake = false;
-double result;
+bool slope = false;
+double result = 0.0;
 
 // unsigned long init_time, end_time, elapsed;
 
@@ -224,6 +226,7 @@ void setup() {
     awake = true;
   }
   delay(3000);
+  slope = false;
 }
 
 // put your main code here, to run repeatedly:
@@ -246,6 +249,17 @@ void loop() {
   // and the board will execute a movement based on that char.
 
   // New comm protocol here.
+  if (result > 2.0 && slope == false) {
+    PitchWalkingUp();
+    slope = true;
+  } else if ((result > -2.0 && result < 2.0) && slope == true) {
+    Parche();
+    slope = false;
+  } else if (result < -2.0 && slope == false) {
+    PitchWalkingDown();
+    slope = true;
+  }
+  delay(100);
   recvWithStartEndMarkers();
   if (newData == true) {
     strcpy(tempChars, receivedChars);
@@ -254,14 +268,7 @@ void loop() {
     parseData();
     // Execute movements based on input command: <REV&###>.
     if (integerFromPC <= 15.00 && integerFromPC >= -15.00) {
-      if (result > 5.0 || result < -5.0) {
-        ForwardWaveGait();
-        ForwardWaveGait();
-        ForwardWaveGait();
-        ForwardWaveGait();
-      } else {
-        ForwardTripodGait();
-      }
+      ForwardTripodGait();
       Serial1.println("|ACK|");
     } else {
       signed int n_total = round(integerFromPC * 2.5);
@@ -295,7 +302,7 @@ void loop() {
     //*
     // ======================= GYROSCOPE MEASUREMENT =======================
     // Measure raw data from sensor and print the processed data.
-    result = gyroMeasureLoop();
+    result = round(gyroMeasureLoop());
     //*/
 
     //*
