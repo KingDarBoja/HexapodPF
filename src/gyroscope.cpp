@@ -72,9 +72,9 @@ void gyroMeasureSetting()
   sensor.setDLPFMode(6);
 
   if (sensor.testConnection()) {
-    Serial1.println("MPU6050 ready!");
+    Serial.println("MPU6050 ready!");
   } else {
-    Serial1.println("Error al iniciar el sensor");
+    Serial.println("Error al iniciar el sensor");
   }
 
   delay(100);
